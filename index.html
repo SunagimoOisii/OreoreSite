@@ -2,38 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>My GitHub Pages</title>
+  <title>群がるキャラデモ</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
   <canvas id="bg"></canvas>
-  <header>
-    <h1>こんにちは GitHub Pages</h1>
-    <nav>
-      <ul class="tabs">
-        <li class="tab" data-target="about">このサイトについて</li>
-        <li class="tab" data-target="works">作品紹介</li>
-      </ul>
-    </nav>
-  </header>
-  <main>
-    <section id="about" class="tab-content">
-      <h2>このサイトについて</h2>
-      <p id="message">これは最初のテストページです。</p>
-      <img src="https://via.placeholder.com/300x200" alt="ダミー画像">
-      <button id="btn">クリックしてみて</button>
-    </section>
-    <section id="works" class="tab-content hidden">
-      <h2>作品紹介</h2>
-      <p>ここに作品説明が入ります。</p>
-      <img src="https://via.placeholder.com/300x200" alt="ダミー画像">
-    </section>
-  </main>
-  <footer>
-    <p>&copy; 2024 My GitHub Pages</p>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="script.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

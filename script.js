@@ -1,129 +1,159 @@
-const message = document.getElementById("message");
+import * as THREE from "three";
 
-// ボタンのクリックイベント
-document.getElementById("btn").addEventListener("click", () => {
-  message.textContent = "ボタンがクリックされました！";
-});
+// ========== 基本セットアップ ==========
+const canvas = document.getElementById("bg");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-// ナビゲーションリンクのクリックイベント
-document.querySelectorAll("nav a").forEach((link) => {
-  link.addEventListener("click", () => {
-    message.textContent = `リンク「${link.textContent}」がクリックされました`;
-  });
-});
-
-// スムーズスクロールの機能
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    e.preventDefault();
-    document.querySelector(this.getAttribute('href')).scrollIntoView({
-      behavior: 'smooth'
-    });
-  });
-});
-
-// スクロール時のフェードイン処理
-const fadeElems = document.querySelectorAll(".fade-in");
-const showElement = () => {
-  fadeElems.forEach((el) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.9) {
-      el.classList.add("visible");
-    }
-  });
-};
-
-window.addEventListener("scroll", showElement);
-showElement();
-
-// 背景で回転するモーフィングオブジェクトの設定
 const scene = new THREE.Scene();
+
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("bg"),
-  alpha: true,
+camera.position.z = 80;
+
+// 環境光
+const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+scene.add(ambient);
+
+// ========== キャラ画像のスプライト ==========
+const texture = new THREE.TextureLoader().load("img/AlienChan.png");
+const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+
+const agents = [];
+const COUNT = 25;
+
+for (let i = 0; i < COUNT; i++) {
+  const sprite = new THREE.Sprite(material);
+  sprite.position.set(
+    (Math.random() - 0.5) * 100,
+    (Math.random() - 0.5) * 100,
+  0
+  );
+
+  // サイズを大きめに変更
+  const scale = 20;
+  sprite.scale.set(20, scale, 1);
+
+  scene.add(sprite);
+
+  agents.push({
+    sprite,
+    velocity: new THREE.Vector3(0, 0, 0)
+  });
+}
+
+
+// ========== マウス位置 ==========
+let target = new THREE.Vector3(0, 0, 0);
+
+document.addEventListener("mousemove", (event) => {
+  const x = (event.clientX / window.innerWidth) * 2 - 1;
+  const y = -(event.clientY / window.innerHeight) * 2 + 1;
+  target.set(x * 50, y * 30, 0);
 });
-renderer.setSize(window.innerWidth, window.innerHeight);
 
-const material = new THREE.MeshNormalMaterial();
-const geometries = [
-  new THREE.TetrahedronGeometry(1),
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.SphereGeometry(0.9, 32, 32),
-];
-let currentIndex = 0;
-let mesh = new THREE.Mesh(geometries[currentIndex], material);
-scene.add(mesh);
+// ========== Boids風パラメータ ==========
+const alignment = 0.01;   // 仲間との整列力（調整用）
+const randomness = 0.0001; // ランダムゆらぎ
 
-camera.position.z = 3;
+// 振る舞いパラメータ（近接吸引）
+const attractRadius = 100;       // マウスからこの距離以内で引き寄せる
+const attractStrength = 0.02;   // 引力の強さ（小さくして遅くする）
+const damping = 0.94;           // 減衰（離れていると減速）
+const maxSpeed = 0.16;          // 最大速度（さらに小さくして遅く）
 
-function animate() {
+// separation（重なり回避）パラメータ
+const separationDistance = 15;   // これより近いと押しのける
+const separationStrength = 0.02; // 押しのける力（やや弱め）
+
+// ========== アニメーション ==========
+function animate()
+{
   requestAnimationFrame(animate);
-  mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.01;
+
+  agents.forEach((a, i) =>
+  {
+    const pos = a.sprite.position;
+
+    // マウスへのベクトルと距離
+    const toMouse = target.clone().sub(pos);
+    const dist = toMouse.length();
+
+    if (dist < attractRadius)
+    {
+      // 距離に応じて強さを減衰させる（近いほど強く引く）
+      const strength = attractStrength * (1 - dist / attractRadius);
+      const force = toMouse.normalize().multiplyScalar(strength);
+      a.velocity.add(force);
+    }
+    else
+    {
+      // マウスから遠いときは徐々に減速して停止に近づける
+      a.velocity.multiplyScalar(damping);
+    }
+
+    // separation: 近すぎる仲間を押しのける（設定値を使用）
+    let sep = new THREE.Vector3();
+    agents.forEach((other) =>
+    {
+      if (other === a) return;
+      const diff = pos.clone().sub(other.sprite.position);
+      const d = diff.length();
+      if (d > 0 && d < separationDistance)
+      {
+        sep.add(diff.normalize().divideScalar(d));
+      }
+    });
+    if (sep.length() > 0)
+    {
+      sep.normalize().multiplyScalar(separationStrength);
+      a.velocity.add(sep);
+    }
+
+    // Alignment: 仲間と向きをそろえる（半径20の範囲、alignment を使用）
+    let neighborVel = new THREE.Vector3();
+    let count = 0;
+    agents.forEach((other, j) =>
+    {
+      if (i === j) return;
+      const d = pos.distanceTo(other.sprite.position);
+      if (d < 20)
+      {
+        neighborVel.add(other.velocity);
+        count++;
+      }
+    });
+    if (count > 0)
+    {
+      neighborVel.divideScalar(count);
+      a.velocity.add(neighborVel.sub(a.velocity).multiplyScalar(alignment));
+    }
+
+    // わずかなランダムゆらぎを残す（randomness を使用）
+  a.velocity.x += (Math.random() - 0.5) * randomness;
+  a.velocity.y += (Math.random() - 0.5) * randomness;
+  // z成分は2Dに固定するので常に0にする
+  a.velocity.z = 0;
+
+    // 速度制限（maxSpeed を使用）
+    a.velocity.clampLength(0, maxSpeed);
+
+  // 位置更新（zは常に0に固定）
+  pos.add(a.velocity);
+  pos.z = 0;
+  });
+
   renderer.render(scene, camera);
 }
 animate();
 
-function morphShape() {
-  const nextIndex = (currentIndex + 1) % geometries.length;
-  const newMesh = new THREE.Mesh(geometries[nextIndex], material);
-  newMesh.scale.set(0.01, 0.01, 0.01);
-  scene.add(newMesh);
-
-  const start = performance.now();
-  const duration = 1000;
-
-  function transition(time) {
-    const t = Math.min((time - start) / duration, 1);
-    mesh.scale.set(1 - t, 1 - t, 1 - t);
-    newMesh.scale.set(t, t, t);
-    if (t < 1) {
-      requestAnimationFrame(transition);
-    } else {
-      scene.remove(mesh);
-      mesh = newMesh;
-      currentIndex = nextIndex;
-    }
-  }
-
-  requestAnimationFrame(transition);
-}
-
-setInterval(morphShape, 4000);
-
+// ========== リサイズ対応 ==========
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const tabs = document.querySelectorAll(".tab");
-  const contents = document.querySelectorAll(".tab-content");
-
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      // Remove active class from all tabs
-      tabs.forEach(t => t.classList.remove("active"));
-      // Add active class to the clicked tab
-      tab.classList.add("active");
-
-      // Hide all content sections
-      contents.forEach(content => content.classList.add("hidden"));
-      // Show the target content section
-      const target = tab.getAttribute("data-target");
-      document.getElementById(target).classList.remove("hidden");
-    });
-  });
-
-  // Activate the first tab by default
-  if (tabs.length > 0) {
-    tabs[0].click();
-  }
 });
