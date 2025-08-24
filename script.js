@@ -12,6 +12,16 @@ document.querySelectorAll("nav a").forEach((link) => {
   });
 });
 
+// スムーズスクロールの機能
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector(this.getAttribute('href')).scrollIntoView({
+      behavior: 'smooth'
+    });
+  });
+});
+
 // スクロール時のフェードイン処理
 const fadeElems = document.querySelectorAll(".fade-in");
 const showElement = () => {
@@ -91,4 +101,29 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const tabs = document.querySelectorAll(".tab");
+  const contents = document.querySelectorAll(".tab-content");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove("active"));
+      // Add active class to the clicked tab
+      tab.classList.add("active");
+
+      // Hide all content sections
+      contents.forEach(content => content.classList.add("hidden"));
+      // Show the target content section
+      const target = tab.getAttribute("data-target");
+      document.getElementById(target).classList.remove("hidden");
+    });
+  });
+
+  // Activate the first tab by default
+  if (tabs.length > 0) {
+    tabs[0].click();
+  }
 });

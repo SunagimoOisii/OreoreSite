@@ -1,12 +1,14 @@
-body {
-  font-family: sans-serif;
+body
+{
+  font-family: 'Roboto', sans-serif;
   line-height: 1.6;
   margin: 0;
   text-align: center;
   background: #f5f5f5;
 }
 
-#bg {
+#bg
+{
   position: fixed;
   top: 0;
   left: 0;
@@ -15,11 +17,13 @@ body {
   z-index: -1;
 }
 
-header, main, footer {
+header, main, footer
+{
   padding: 20px;
 }
 
-nav ul {
+nav ul
+{
   list-style: none;
   display: flex;
   justify-content: center;
@@ -27,26 +31,31 @@ nav ul {
   padding: 0;
 }
 
-section {
+section
+{
   margin: 20px 0;
   padding: 20px;
 }
 
-#about {
+#about
+{
   background: rgba(255, 255, 255, 0.7);
   color: #333333;
 }
 
-#works {
+#works
+{
   background: rgba(232, 244, 255, 0.7);
   color: #333333;
 }
 
-h1 {
+h1
+{
   color: royalblue;
 }
 
-button {
+button
+{
   padding: 10px 20px;
   font-size: 16px;
   border: none;
@@ -56,31 +65,75 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover
+{
   background: darkblue;
 }
 
 /* スクロール時にふわっと表示するための設定 */
-.fade-in {
+.fade-in
+{
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
-.fade-in.visible {
+.fade-in.visible
+{
   opacity: 1;
   transform: translateY(0);
 }
 
-@media (max-width: 600px) {
-  header, main, footer {
+.tabs {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #333;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  color: white;
+  background: #444;
+  border: 1px solid #555;
+}
+
+.tab:hover {
+  background: #555;
+}
+
+.tab.active {
+  background: royalblue;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content:not(.hidden) {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 600px)
+{
+  header, main, footer
+  {
     padding: 10px;
   }
-  nav ul {
+  nav ul
+  {
     flex-direction: column;
     gap: 10px;
   }
-  section {
+  section
+  {
     margin: 10px 0;
     padding: 10px;
   }
