@@ -1,8 +1,41 @@
 body {
   font-family: sans-serif;
+  line-height: 1.6;
+  margin: 0;
   text-align: center;
-  margin: 40px;
   background: #f5f5f5;
+}
+
+header, main, footer {
+  padding: 20px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 0;
+}
+
+section {
+  margin: 20px 0;
+  padding: 20px;
+}
+
+#about {
+  background: #ffffff;
+  color: #333333;
+}
+
+#works {
+  background: #e8f4ff;
+  color: #333333;
+}
+
+#contact {
+  background: #fff4e5;
+  color: #333333;
 }
 
 h1 {
@@ -22,3 +55,18 @@ button {
 button:hover {
   background: darkblue;
 }
+
+@media (max-width: 600px) {
+  header, main, footer {
+    padding: 10px;
+  }
+  nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+  section {
+    margin: 10px 0;
+    padding: 10px;
+  }
+}
+
