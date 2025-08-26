@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-<!DOCTYPE html>
-<html lang="ja">
 
 <head>
   <meta charset="utf-8" />
@@ -20,7 +18,7 @@
     <section id="about">
       <h2>About</h2>
       <div class="profile">
-        <img src="img/me.jpg" alt="プロフィール写真">
+        <canvas id="avatar-canvas"></canvas>
         <div class="bio">
           <p>簡単な自己紹介文を書いてください。職業、得意分野、興味のあることなど。</p>
           <p>例: Web開発 / JavaScript / three.js / 趣味: 料理・写真</p>
@@ -46,7 +44,15 @@
     <p>&copy; 2025 あなたの名前</p>
   </footer>
 
-  <script src="script.js"></script>
+  <script type="importmap">
+  {
+    "imports":
+    {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 
 </html>

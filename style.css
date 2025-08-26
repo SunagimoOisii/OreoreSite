@@ -186,3 +186,33 @@ button:hover
   }
 }
 
+/* 3Dアバターの独立セクション */
+.avatar-wrap {
+  max-width: 900px;
+  margin: 0 auto 24px auto;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#avatar-canvas {
+  width: 360px;   /* お好みで */
+  height: 360px;  /* お好みで */
+  display: block;
+  border-radius: 12px;
+  clip-path: none;
+  mask-image: none;
+  mask: none;
+  background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0 / 20px 20px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* スマホで少し小さく */
+@media (max-width: 600px) {
+  #avatar-canvas {
+    width: 200px;
+    height: 200px;
+  }
+}

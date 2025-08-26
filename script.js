@@ -1,164 +1,180 @@
-// Minimal script for personal intro site
-// Kept intentionally small — add interactive JS here if needed
-document.addEventListener('DOMContentLoaded', () => {
-    // placeholder: no 3D or boids
-});
-import * as THREE from "three";
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-// ========== 基本セットアップ ==========
-const canvas = document.getElementById("bg");
+const canvas = document.getElementById("avatar-canvas");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+// ===== トグル =====
+const PS1_MODE = true;          // 低解像/ニアレスト/量子化
+const AFFINE_STRENGTH = 0.75;   // 0.0=透視補正(通常), 1.0=強いアフィン歪み
+
+// ===== レンダラーをCSSサイズに同期（PS1: 内部解像を落とす）=====
+function resizeRendererToDisplaySize() {
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.max(1, rect.width | 0);
+  const h = Math.max(1, rect.height | 0);
+
+  renderer.setPixelRatio(1);          // 高DPIオフでジャギ出す
+  renderer.setSize(w, h, false);
+
+  if (PS1_MODE) {
+    const scale = 0.5;                // 0.5〜0.85 好みで
+    renderer.setSize((w * scale) | 0, (h * scale) | 0, false);
+    renderer.domElement.style.imageRendering = "pixelated";
+  } else {
+    renderer.domElement.style.imageRendering = "";
+  }
+  return { w, h };
+}
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.z = 80;
+// ===== カメラ =====
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(0, 0, 5);
+camera.lookAt(0, 0, 0);
 
-// 環境光
-const ambient = new THREE.AmbientLight(0xffffff, 1.0);
-scene.add(ambient);
+// ===== 立方体 =====
+const cubeSize = 1.8;
+const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 
-// ========== キャラ画像のスプライト ==========
-const texture = new THREE.TextureLoader().load("img/AlienChan.png");
-const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+// ===== 自画像テクスチャ（PS1味設定）=====
+const texture = new THREE.TextureLoader().load("img/me.jpg", (tex) => {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.anisotropy = 0;
+});
 
-const agents = [];
-const COUNT = 25;
+// ===== アフィン補間シェーダ（安全版：ミックス＋クランプ）=====
+function makeAffineMaterial(map, toGray = false) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: map },
+      uAffine: { value: AFFINE_STRENGTH }
+    },
+    vertexShader: `
+      varying vec2 vUv_persp;     // 通常の透視補正UV（three標準）
+      varying vec2 vUv_affineRaw; // アフィン用の“生”UV（w掛け）
+      varying float vFragW;       // クリップ後の w（frag側の割り戻しに使う）
 
-for (let i = 0; i < COUNT; i++) {
-  const sprite = new THREE.Sprite(material);
-  sprite.position.set(
-    (Math.random() - 0.5) * 100,
-    (Math.random() - 0.5) * 100,
-  0
-  );
+      void main () {
+        vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vFragW = clip.w;
 
-  // サイズを大きめに変更
-  const scale = 20;
-  sprite.scale.set(20, scale, 1);
+        vUv_persp   = uv;          // three標準のvaryingは自動で透視補正される
+        vUv_affineRaw = uv * clip.w; // アフィン用：先に w を掛けておく
 
-  scene.add(sprite);
+        gl_Position = clip;
+      }
+    `,
+    fragmentShader: `
+      precision mediump float;
+      uniform sampler2D map;
+      uniform float uAffine;
+      varying vec2 vUv_persp;
+      varying vec2 vUv_affineRaw;
+      varying float vFragW;
 
-  agents.push({
-    sprite,
-    velocity: new THREE.Vector3(0, 0, 0)
+      void main () {
+        // 透視補正UV
+        vec2 uv_p = vUv_persp;
+
+        // 擬似アフィンUV：w で割り戻し（ここが歪みの肝）
+        vec2 uv_a = vUv_affineRaw / vFragW;
+
+        // 安定化：UVをミックス＆クランプ（黒抜け防止）
+        vec2 uv = mix(uv_p, uv_a, clamp(uAffine, 0.0, 1.0));
+        uv = clamp(uv, 0.0, 1.0);
+
+        vec4 c = texture2D(map, uv);
+        ${toGray
+          ? `float g = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+             gl_FragColor = vec4(vec3(g), c.a);`
+          : `gl_FragColor = c;`
+        }
+      }
+    `,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true
   });
 }
 
+// 面順序: +X, -X, +Y, -Y, +Z(正面), -Z
+const matColorAffine = makeAffineMaterial(texture, false); // 正面カラー
+const matGrayAffine  = makeAffineMaterial(texture, true);  // 他はグレー
 
-// ========== マウス位置 ==========
-let target = new THREE.Vector3(0, 0, 0);
+const materials = [
+  matGrayAffine, // +X
+  matGrayAffine, // -X
+  matGrayAffine, // +Y
+  matGrayAffine, // -Y
+  matColorAffine, // +Z
+  matGrayAffine  // -Z
+];
 
-document.addEventListener("mousemove", (event) => {
-  const x = (event.clientX / window.innerWidth) * 2 - 1;
-  const y = -(event.clientY / window.innerHeight) * 2 + 1;
-  target.set(x * 50, y * 30, 0);
-});
+const cube = new THREE.Mesh(boxGeo, materials);
+scene.add(cube);
 
-// ========== Boids風パラメータ ==========
-const alignment = 0.01;   // 仲間との整列力（調整用）
-const randomness = 0.0001; // ランダムゆらぎ
+// ===== OrbitControls =====
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.0;
+controls.target.set(0, 0, 0);
 
-// 振る舞いパラメータ（近接吸引）
-const attractRadius = 100;       // マウスからこの距離以内で引き寄せる
-const attractStrength = 0.02;   // 引力の強さ（小さくして遅くする）
-const damping = 0.94;           // 減衰（離れていると減速）
-const maxSpeed = 0.16;          // 最大速度（さらに小さくして遅く）
+// ===== 外接球フィット（回転でも切れない）=====
+function fitCameraToBox() {
+  const { w, h } = resizeRendererToDisplaySize();
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
 
-// separation（重なり回避）パラメータ
-const separationDistance = 15;   // これより近いと押しのける
-const separationStrength = 0.02; // 押しのける力（やや弱め）
+  const r = Math.sqrt(3) * (cubeSize / 2);
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const vDist = r / Math.tan(vFov / 2.0);
+  const hFov  = 2.0 * Math.atan(Math.tan(vFov / 2.0) * camera.aspect);
+  const hDist = r / Math.tan(hFov / 2.0);
 
-// ========== アニメーション ==========
-function animate()
-{
+  const margin = PS1_MODE ? 1.35 : 1.25;
+  const dist = Math.max(vDist, hDist) * margin;
+
+  camera.position.set(0, 0, dist);
+  camera.near = Math.max(0.1, dist - r * 4);
+  camera.far  = dist + r * 6;
+  camera.updateProjectionMatrix();
+
+  controls.update();
+}
+
+// ===== 量子化による“PS1ゆらぎ”（お好みで）=====
+function snap(v, step) { return Math.round(v / step) * step; }
+function applyPS1Jitter() {
+  if (!PS1_MODE) return;
+  const posStep = 1 / 256;
+  const rotStep = THREE.MathUtils.degToRad(1.0);
+
+  camera.position.x = snap(camera.position.x, posStep);
+  camera.position.y = snap(camera.position.y, posStep);
+  camera.position.z = snap(camera.position.z, posStep);
+
+  cube.rotation.x = snap(cube.rotation.x, rotStep);
+  cube.rotation.y = snap(cube.rotation.y, rotStep);
+  cube.rotation.z = snap(cube.rotation.z, rotStep);
+}
+
+// ===== 起動・ループ =====
+fitCameraToBox();
+window.addEventListener("resize", fitCameraToBox);
+
+function animate() {
   requestAnimationFrame(animate);
-
-  agents.forEach((a, i) =>
-  {
-    const pos = a.sprite.position;
-
-    // マウスへのベクトルと距離
-    const toMouse = target.clone().sub(pos);
-    const dist = toMouse.length();
-
-    if (dist < attractRadius)
-    {
-      // 距離に応じて強さを減衰させる（近いほど強く引く）
-      const strength = attractStrength * (1 - dist / attractRadius);
-      const force = toMouse.normalize().multiplyScalar(strength);
-      a.velocity.add(force);
-    }
-    else
-    {
-      // マウスから遠いときは徐々に減速して停止に近づける
-      a.velocity.multiplyScalar(damping);
-    }
-
-    // separation: 近すぎる仲間を押しのける（設定値を使用）
-    let sep = new THREE.Vector3();
-    agents.forEach((other) =>
-    {
-      if (other === a) return;
-      const diff = pos.clone().sub(other.sprite.position);
-      const d = diff.length();
-      if (d > 0 && d < separationDistance)
-      {
-        sep.add(diff.normalize().divideScalar(d));
-      }
-    });
-    if (sep.length() > 0)
-    {
-      sep.normalize().multiplyScalar(separationStrength);
-      a.velocity.add(sep);
-    }
-
-    // Alignment: 仲間と向きをそろえる（半径20の範囲、alignment を使用）
-    let neighborVel = new THREE.Vector3();
-    let count = 0;
-    agents.forEach((other, j) =>
-    {
-      if (i === j) return;
-      const d = pos.distanceTo(other.sprite.position);
-      if (d < 20)
-      {
-        neighborVel.add(other.velocity);
-        count++;
-      }
-    });
-    if (count > 0)
-    {
-      neighborVel.divideScalar(count);
-      a.velocity.add(neighborVel.sub(a.velocity).multiplyScalar(alignment));
-    }
-
-    // わずかなランダムゆらぎを残す（randomness を使用）
-  a.velocity.x += (Math.random() - 0.5) * randomness;
-  a.velocity.y += (Math.random() - 0.5) * randomness;
-  // z成分は2Dに固定するので常に0にする
-  a.velocity.z = 0;
-
-    // 速度制限（maxSpeed を使用）
-    a.velocity.clampLength(0, maxSpeed);
-
-  // 位置更新（zは常に0に固定）
-  pos.add(a.velocity);
-  pos.z = 0;
-  });
-
+  cube.rotation.y += 0.007;
+  applyPS1Jitter();
+  controls.update();
   renderer.render(scene, camera);
 }
 animate();
-
-// ========== リサイズ対応 ==========
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
