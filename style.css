@@ -2,8 +2,8 @@
    Global tokens
    =============================== */
 :root {
-  --bg: #111;
-  --text: #eee;
+  --bg: #eee;
+  --text: #111;
   --muted: #aaa;
   --card: #1a1a1a;
   --accent: royalblue;
@@ -53,13 +53,14 @@ header {
    Profile block (About)
    =============================== */
 .profile {
+  --text: #eee;
   display: flex;
   gap: 16px;
   align-items: center;
   background: var(--card);
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgb(0,0,0,0.6);
 }
 .profile img {
   width: 160px;
