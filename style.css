@@ -22,6 +22,15 @@ body {
   color: var(--text);
 }
 
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* 見出しなど */
 h1 { color: var(--accent); }
 section h2 {
