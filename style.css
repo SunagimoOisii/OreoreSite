@@ -197,8 +197,8 @@ button:hover
 }
 
 #avatar-canvas {
-  width: 360px;   /* お好みで */
-  height: 360px;  /* お好みで */
+  width: 325px;   /* お好みで */
+  height: 325px;  /* お好みで */
   display: block;
   border-radius: 12px;
   clip-path: none;

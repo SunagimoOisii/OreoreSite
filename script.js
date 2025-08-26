@@ -6,7 +6,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 // ===== トグル =====
-const PS1_MODE = true;         // ← ここでPS1風ON/OFF
+const PS1_MODE = true;         // ← PS1風ON/OFF
 const AFFINE_STRENGTH = 0.65;  // 0.0=透視補正, 1.0=強アフィン（PS1_MODE=true時のみ使用）
 
 // ===== レンダラーをCSSサイズに同期 =====
@@ -16,8 +16,8 @@ function resizeRendererToDisplaySize() {
   const h = Math.max(1, rect.height | 0);
 
   if (PS1_MODE) {
-    renderer.setPixelRatio(1); // 高DPIオフでジャギ感🎮
-    const scale = 0.5;         // 内部解像度を下げる（0.5〜0.85）
+    renderer.setPixelRatio(1); // 高DPIオフでジャギ感
+    const scale = 0.5;         // 内部解像度を落とす（0.5〜0.85で好み調整）
     renderer.setSize((w * scale) | 0, (h * scale) | 0, false);
     renderer.domElement.style.imageRendering = "pixelated";
   } else {
@@ -25,6 +25,13 @@ function resizeRendererToDisplaySize() {
     renderer.setSize(w, h, false);
     renderer.domElement.style.imageRendering = "";
   }
+
+  // ポスト用RTを同期
+  const internalW = renderer.domElement.width;   // 実際の描画バッファサイズ(px)
+  const internalH = renderer.domElement.height;
+  postRT.setSize(internalW, internalH);
+  postMat.uniforms.uResolution.value.set(internalW, internalH);
+
   return { w, h };
 }
 
@@ -43,7 +50,7 @@ const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const texture = new THREE.TextureLoader().load("img/me.jpg", (tex) => {
   tex.colorSpace = THREE.SRGBColorSpace;
   if (PS1_MODE) {
-    // PS1味：ニアレスト & ミップ無し
+    // PS1味：ニアレスト＆ミップ無し
     tex.generateMipmaps = false;
     tex.minFilter = THREE.NearestFilter;
     tex.magFilter = THREE.NearestFilter;
@@ -56,10 +63,7 @@ const texture = new THREE.TextureLoader().load("img/me.jpg", (tex) => {
 // アフィン（擬似）：透視UVとアフィンUVをmix + clamp（黒抜け防止）
 function makeAffineMaterial(map, toGray = false) {
   return new THREE.ShaderMaterial({
-    uniforms: {
-      map: { value: map },
-      uAffine: { value: AFFINE_STRENGTH }
-    },
+    uniforms: { map: { value: map }, uAffine: { value: AFFINE_STRENGTH } },
     vertexShader: `
       varying vec2 vUv_persp;
       varying vec2 vUv_affineRaw;
@@ -98,14 +102,14 @@ function makeAffineMaterial(map, toGray = false) {
   });
 }
 
-// 透視補正アリ（通常）：three標準のvaryingでOK
+// 透視補正アリ（通常）
 function makePerspMaterial(map, toGray = false) {
   return new THREE.ShaderMaterial({
     uniforms: { map: { value: map } },
     vertexShader: `
       varying vec2 vUv;
       void main() {
-        vUv = uv; // threeが自動で透視補正して補間
+        vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
@@ -139,15 +143,7 @@ if (PS1_MODE) {
   matGray  = makePerspMaterial(texture, true);   // 他グレー(通常)
 }
 
-const materials = [
-  matGray,  // +X
-  matGray,  // -X
-  matGray,  // +Y
-  matGray,  // -Y
-  matColor, // +Z（正面カラー）
-  matGray   // -Z
-];
-
+const materials = [matGray, matGray, matGray, matGray, matColor, matGray];
 const cube = new THREE.Mesh(boxGeo, materials);
 scene.add(cube);
 
@@ -155,8 +151,7 @@ scene.add(cube);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableZoom = false;
 controls.enablePan = false;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 1.0;
+controls.autoRotate = false; // ループ側で回転
 controls.target.set(0, 0, 0);
 
 // ===== 外接球フィット（回転でも切れない）=====
@@ -188,25 +183,128 @@ function applyPS1Jitter() {
   if (!PS1_MODE) return;
   const posStep = 1 / 256;
   const rotStep = THREE.MathUtils.degToRad(1.0);
-
   camera.position.x = snap(camera.position.x, posStep);
   camera.position.y = snap(camera.position.y, posStep);
   camera.position.z = snap(camera.position.z, posStep);
-
   cube.rotation.x = snap(cube.rotation.x, rotStep);
   cube.rotation.y = snap(cube.rotation.y, rotStep);
   cube.rotation.z = snap(cube.rotation.z, rotStep);
 }
 
+// ===== ▼▼ 減色(Bayer 4x4)ポストプロセス ▼▼ =====
+// RenderTarget
+const postRT = new THREE.WebGLRenderTarget(2, 2, {
+  minFilter: THREE.NearestFilter,
+  magFilter: THREE.NearestFilter,
+  depthBuffer: false,
+  stencilBuffer: false
+});
+// FS Quad
+const postScene = new THREE.Scene();
+const postCam   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const postMat   = new THREE.ShaderMaterial({
+  uniforms: {
+    tSrc:       { value: null },
+    uResolution:{ value: new THREE.Vector2(2, 2) },
+    uRgbBits:   { value: 5.0 }  // 5bit → RGB555
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision mediump float;
+    uniform sampler2D tSrc;
+    uniform vec2 uResolution;
+    uniform float uRgbBits;
+    varying vec2 vUv;
+
+    // 4x4 Bayer行列（0..15）
+    float bayer4x4(vec2 ip){
+      int x = int(mod(ip.x, 4.0));
+      int y = int(mod(ip.y, 4.0));
+      int idx = y*4 + x;
+      int mat[16];
+      mat[0]=0; mat[1]=8; mat[2]=2; mat[3]=10;
+      mat[4]=12; mat[5]=4; mat[6]=14; mat[7]=6;
+      mat[8]=3; mat[9]=11; mat[10]=1; mat[11]=9;
+      mat[12]=15; mat[13]=7; mat[14]=13; mat[15]=5;
+      return float(mat[idx]);
+    }
+
+    void main(){
+      // 元色
+      vec4 c = texture2D(tSrc, vUv);
+
+      // ピクセル座標（レンダリング解像度）
+      vec2 frag = vUv * uResolution;
+
+      // Bayerしきい値（0..1）
+      float t = (bayer4x4(frag) + 0.5) / 16.0;
+
+      // RGB555 量子化＋ベイヤーディザ
+      float levels = exp2(uRgbBits) - 1.0; // 31
+      vec3 q = floor(c.rgb * levels + t) / levels;
+
+      gl_FragColor = vec4(q, c.a);
+    }
+  `,
+  depthTest: false,
+  depthWrite: false
+});
+const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat);
+postScene.add(postQuad);
+
 // ===== 起動・ループ =====
 fitCameraToBox();
 window.addEventListener("resize", fitCameraToBox);
 
-function animate() {
-  requestAnimationFrame(animate);
-  cube.rotation.y += 0.007;
-  applyPS1Jitter();
-  controls.update();
-  renderer.render(scene, camera);
+const ROT_SPEED = 0.007 * 60; // 秒あたりの回転速度（従来体感に近づけ）
+
+if (PS1_MODE) {
+  // --- 30fps固定 ---
+  const FIXED_FPS = 30;
+  const STEP_MS   = 1000 / FIXED_FPS;
+  let accMs = 0, prevMs = performance.now();
+
+  function update(dtSec) {
+    cube.rotation.y += ROT_SPEED * dtSec;
+    applyPS1Jitter();
+  }
+  function render() {
+    // ① シーンをRTへ
+    renderer.setRenderTarget(postRT);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+
+    // ② RTをRGB555+Bayerでフルスクリーンに
+    postMat.uniforms.tSrc.value = postRT.texture;
+    renderer.render(postScene, postCam);
+  }
+  function loop(nowMs) {
+    requestAnimationFrame(loop);
+    accMs += nowMs - prevMs;
+    prevMs = nowMs;
+    while (accMs >= STEP_MS) {
+      update(STEP_MS / 1000);
+      accMs -= STEP_MS;
+    }
+    render();
+  }
+  requestAnimationFrame(loop);
+
+} else {
+  // --- 通常の滑らかなfps（ブラウザ任せ）---
+  function animate() {
+    requestAnimationFrame(animate);
+    cube.rotation.y += 0.007;
+
+    // 直接描画（ポスト無し）
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
 }
-animate();
