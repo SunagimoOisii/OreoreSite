@@ -15,7 +15,7 @@
 body {
   margin: 0;
   font-family: 'PixelMplus10', monospace; /* 日本語もドット風に */
-  font-size: 14px;
+  font-size: 20x;
   line-height: 1.5;
   image-rendering: pixelated;             /* ドット感を強調 */
   background: var(--bg);
