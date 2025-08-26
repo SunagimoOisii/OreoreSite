@@ -8,7 +8,7 @@ import { applyPS1Jitter } from "./lib/utils.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
-const { scene, camera, cube } = createSceneGraph(THREE, CONFIG);
+const { scene, camera, cube, updateMorph } = createSceneGraph(THREE, CONFIG);
 const controls = createControls(THREE, camera, renderer.domElement, CONFIG);
 const post = createPostPipeline(THREE, renderer, CONFIG); // { render(scene,camera), resize() }
 
@@ -116,16 +116,18 @@ if (CONFIG.PS1_MODE) {
       applyPS1Jitter(THREE, camera, cube, CONFIG);
       acc -= STEP;
     }
+    updateMorph(t);
     post.render(scene, camera);
     controls.update();
   }
   requestAnimationFrame(loop);
 } else {
-  function animate(){
+  function animate(time){
     requestAnimationFrame(animate);
     cube.rotation.y += 0.007;
+    updateMorph(time);
     renderer.render(scene, camera); // 直接描画
     controls.update();
   }
-  animate();
+  requestAnimationFrame(animate);
 }
