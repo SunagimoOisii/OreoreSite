@@ -22,6 +22,17 @@ body {
   color: var(--text);
 }
 
+#bg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* 見出しなど */
 h1 { color: var(--accent); }
 section h2 {
