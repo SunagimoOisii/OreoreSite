@@ -73,24 +73,16 @@ header {
   color: var(--text);
 }
 
-/* 3Dアバターの独立セクション（About内のcanvas） */
-.avatar-wrap {
-  max-width: 900px;
-  margin: 0 auto 24px auto;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+/* サイト全体の背景キャンバス */
 #avatar-canvas {
-  width: 325px;   /* お好みで */
-  height: 325px;  /* お好みで */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: block;
-  border-radius: 12px;
-  clip-path: none;
-  mask-image: none;
-  mask: none;
-  background:#ddd
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ===============================
@@ -178,34 +170,6 @@ button:hover { background: #2f4fb7; }
   section { margin: 10px 0; padding: 10px; }
 }
 
-/* ==== CRT風オーバーレイ（3Dキャンバスだけ） ==== */
-.avatar-crt {
-  position: relative;
-  display: inline-block; /* キャンバスサイズにフィット */
-}
-
-/* 走査線 + ビネット */
-.avatar-crt::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-
-  /* 走査線（1px 明 → 2px 間隔）＋ ビネット */
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.15) 0px,
-      rgba(255,255,255,0.15) 1px,
-      rgba(0,0,0,0.00)       1px,
-      rgba(0,0,0,0.00)       3px
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(0,0,0,0.00) 62%,
-      rgba(0,0,0,0.30) 100%
-    );
-}
 
 /* ===== Boot Overlay (起動時ロゴ) ===== */
 #boot-overlay{
