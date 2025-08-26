@@ -121,11 +121,11 @@ if (CONFIG.PS1_MODE) {
   }
   requestAnimationFrame(loop);
 } else {
-  function animate(){
+  function animate(time){
     requestAnimationFrame(animate);
     cube.rotation.y += 0.007;
     renderer.render(scene, camera); // 直接描画
     controls.update();
   }
-  animate();
+  requestAnimationFrame(animate);
 }
