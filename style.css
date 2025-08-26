@@ -5,8 +5,7 @@
   --bg: #eee;
   --text: #111;
   --muted: #aaa;
-  --card: #1a1a1a;
-  --accent: royalblue;
+  --card: rgba(26, 26, 26, 0.7);
 }
 
 /* ===============================
@@ -44,10 +43,6 @@ header {
   text-align: center;
   padding: 48px 16px 24px;
 }
-.tagline {
-  margin: 6px 0 0;
-  color: var(--muted);
-}
 
 /* ===============================
    Layout
@@ -63,6 +58,8 @@ header {
    =============================== */
 .profile {
   --text: #eee;
+  backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
+  -webkit-backdrop-filter: blur(1px);
   display: flex;
   gap: 16px;
   align-items: center;
@@ -109,82 +106,6 @@ footer {
   text-align: center;
   color: var(--muted);
   padding: 36px 8px;
-}
-
-/* ===============================
-   Buttons (任意で使用)
-   =============================== */
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-}
-button:hover { background: #2f4fb7; }
-
-/* ===============================
-   Tabs (任意で使用)
-   =============================== */
-.tabs {
-  display: flex;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: #333;
-}
-.tab {
-  padding: 10px 20px;
-  cursor: pointer;
-  color: white;
-  background: #444;
-  border: 1px solid #555;
-}
-.tab:hover { background: #555; }
-.tab.active { background: var(--accent); }
-.tab-content { display: none; }
-.tab-content:not(.hidden) { display: block; }
-.hidden { display: none; }
-
-/* ===============================
-   Fade-in (任意で使用)
-   =============================== */
-.fade-in {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ===============================
-   Responsive
-   =============================== */
-@media (max-width: 600px) {
-  header, main, footer { padding: 10px; }
-
-  .profile {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .profile img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-  }
-
-  #avatar-canvas {
-    width: 200px;
-    height: 200px;
-  }
-
-  nav ul { flex-direction: column; gap: 10px; }
-  section { margin: 10px 0; padding: 10px; }
 }
 
 /* ==== CRT風オーバーレイ（3Dキャンバスだけ） ==== */
