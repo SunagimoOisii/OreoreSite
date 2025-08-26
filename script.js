@@ -1,3 +1,8 @@
+// Minimal script for personal intro site
+// Kept intentionally small — add interactive JS here if needed
+document.addEventListener('DOMContentLoaded', () => {
+    // placeholder: no 3D or boids
+});
 import * as THREE from "three";
 
 // ========== 基本セットアップ ==========

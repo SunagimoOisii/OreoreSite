@@ -1,24 +1,52 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>群がるキャラデモ</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-  </style>
-</head>
-<body>
-  <canvas id="bg"></canvas>
+<!DOCTYPE html>
+<html lang="ja">
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-    }
-  }
-  </script>
-  <script type="module" src="script.js"></script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sunagimo の部屋</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>Sunagimo の部屋</h1>
+    <p class="tagline">簡潔な肩書き・キャッチフレーズ</p>
+  </header>
+
+  <main class="container">
+    <section id="about">
+      <h2>About</h2>
+      <div class="profile">
+        <img src="img/me.jpg" alt="プロフィール写真">
+        <div class="bio">
+          <p>簡単な自己紹介文を書いてください。職業、得意分野、興味のあることなど。</p>
+          <p>例: Web開発 / JavaScript / three.js / 趣味: 料理・写真</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="works">
+      <h2>Works</h2>
+      <ul>
+        <li>プロジェクトA — 簡単な説明</li>
+        <li>プロジェクトB — 簡単な説明</li>
+      </ul>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <p>連絡先（メールやSNS）をここに記載してください。</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 あなたの名前</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
+
 </html>
