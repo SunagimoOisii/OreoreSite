@@ -1,7 +1,8 @@
-// 背景：立方体内で球が跳ねあう（壁＆球-球の弾性衝突）
-// 既存の #bg-canvas を使用。Boids は撤去してOK。
+// 背景：GPU ベース流体シミュレーション（WebGL 計算シェーダ風）
+// 既存の #bg-canvas を使用。
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import { GPUComputationRenderer } from "https://unpkg.com/three@0.160.0/examples/jsm/misc/GPUComputationRenderer.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas) {
@@ -11,11 +12,11 @@ if (!canvas) {
 // -------- 基本セットアップ（軽量・レトロ寄せ） --------
 const renderer = new THREE.WebGLRenderer({
   canvas,
-  antialias: false,     // 粗さを残す
-  alpha: true,          // 透過でページ背景を活かす
+  antialias: false,
+  alpha: true,
   powerPreference: "low-power",
 });
-renderer.setPixelRatio(1); // PS1風に寄せるなら 1 固定が相性良し
+renderer.setPixelRatio(1);
 renderer.setSize(window.innerWidth, window.innerHeight, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
@@ -29,177 +30,187 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 0, 12);
 
-// 簡易ライト（MeshNormalMaterial なら不要。標準材用に薄く）
+// 簡易ライト
 const amb = new THREE.AmbientLight(0xffffff, 0.5);
 const dir = new THREE.DirectionalLight(0xffffff, 0.6);
 dir.position.set(1, 2, 3);
 scene.add(amb, dir);
 
 // -------- 立方体ワイヤーフレーム（枠） --------
-const BOUNDS = 4.0;                     // 立方体の一辺
-const half = BOUNDS / 2;
+const BOUNDS = 4.0; // 立方体の一辺
 const boxGeo = new THREE.BoxGeometry(BOUNDS, BOUNDS, BOUNDS);
 const edges = new THREE.EdgesGeometry(boxGeo);
-const lineMat = new THREE.LineBasicMaterial({ color: 0x666666, transparent:true, opacity:0.7 });
+const lineMat = new THREE.LineBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.7 });
 const box = new THREE.LineSegments(edges, lineMat);
 scene.add(box);
 
-// -------- 球（InstancedMesh で高速＆省メモリ） --------
-const COUNT = 24;       // 球の数（20〜40くらいが見栄えと負荷のバランス◎）
-const R = 0.1;         // 半径
-const GEO = new THREE.SphereGeometry(R, 16, 12);  // 低ポリ
-// ※色は固定。減色やランダム色にしたければ THREE.InstancedMesh#setColorAt を使う
-const MAT = new THREE.MeshStandardMaterial({
-  color: 0xffffff,
-  metalness: 0.1,
-  roughness: 0.6,
-});
-const BALLS = new THREE.InstancedMesh(GEO, MAT, COUNT);
-BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-scene.add(BALLS);
+// -------- GPU 計算セットアップ --------
+const COUNT = 256; // 粒子数
+const R = 0.06; // 表示半径
+const TEX_WIDTH = Math.ceil(Math.sqrt(COUNT));
+const TEX_HEIGHT = TEX_WIDTH;
 
-// 位置・速度（XYZ をフラット配列で管理）
-const pos = new Float32Array(COUNT * 3);
-const vel = new Float32Array(COUNT * 3);
+const gpuCompute = new GPUComputationRenderer(TEX_WIDTH, TEX_HEIGHT, renderer);
 
-// 初期化：重なりを避けつつランダム配置
-function rand(min, max) { return min + Math.random() * (max - min); }
-for (let i = 0; i < COUNT; i++) {
-  // 位置
-  let placed = false;
-  let px = 0, py = 0, pz = 0;
-  while (!placed) {
-    px = rand(-half + R, half - R);
-    py = rand(-half + R, half - R);
-    pz = rand(-half + R, half - R);
-    placed = true;
-    for (let j = 0; j < i; j++) {
-      const j3 = j * 3;
-      const dx = px - pos[j3 + 0];
-      const dy = py - pos[j3 + 1];
-      const dz = pz - pos[j3 + 2];
-      if (dx*dx + dy*dy + dz*dz < (2*R)*(2*R)) { placed = false; break; }
-    }
-  }
-  const i3 = i * 3;
-  pos[i3 + 0] = px;
-  pos[i3 + 1] = py;
-  pos[i3 + 2] = pz;
-
-  // 速度（ほどよい速度で）
-  vel[i3 + 0] = rand(-1.0, 1.0);
-  vel[i3 + 1] = rand(-1.0, 1.0);
-  vel[i3 + 2] = rand(-1.0, 1.0);
-}
-
-// 壁反射（完全弾性）
-function reflectWalls(i3) {
-  // 位置更新後に壁で反射。侵入した分は押し戻す。
-  for (let axis = 0; axis < 3; axis++) {
-    const p = pos[i3 + axis];
-    const v = vel[i3 + axis];
-    const limit = half - R;
-    if (p > limit) { pos[i3 + axis] = limit; vel[i3 + axis] = -Math.abs(v); }
-    else if (p < -limit) { pos[i3 + axis] = -limit; vel[i3 + axis] = Math.abs(v); }
-  }
-}
-
-// 球-球の弾性衝突（同質量の簡易モデル）
-function collidePairs(dt) {
-  const minDist = 2 * R;
-  const minDist2 = minDist * minDist;
+function createTexture(initializer) {
+  const tex = gpuCompute.createTexture();
+  const data = tex.image.data;
   for (let i = 0; i < COUNT; i++) {
-    const i3 = i * 3;
-    const ix = pos[i3], iy = pos[i3 + 1], iz = pos[i3 + 2];
-    for (let j = i + 1; j < COUNT; j++) {
-      const j3 = j * 3;
-      const dx = pos[j3] - ix;
-      const dy = pos[j3 + 1] - iy;
-      const dz = pos[j3 + 2] - iz;
-      const d2 = dx*dx + dy*dy + dz*dz;
-      if (d2 < minDist2 && d2 > 1e-9) {
-        const d = Math.sqrt(d2);
-        // 法線
-        const nx = dx / d, ny = dy / d, nz = dz / d;
+    const idx = i * 4;
+    initializer(data, idx);
+  }
+  return tex;
+}
 
-        // オーバーラップ分を押し戻す（半分ずつ）
-        const overlap = (minDist - d);
-        const push = overlap * 0.5 + 1e-4; // 少し余裕を持たせる
-        pos[i3]     -= nx * push;
-        pos[i3 + 1] -= ny * push;
-        pos[i3 + 2] -= nz * push;
-        pos[j3]     += nx * push;
-        pos[j3 + 1] += ny * push;
-        pos[j3 + 2] += nz * push;
+const posTex = createTexture((data, idx) => {
+  data[idx] = (Math.random() - 0.5) * (BOUNDS - R * 2);
+  data[idx + 1] = (Math.random() - 0.5) * (BOUNDS - R * 2);
+  data[idx + 2] = (Math.random() - 0.5) * (BOUNDS - R * 2);
+  data[idx + 3] = 1;
+});
+const velTex = createTexture((data, idx) => {
+  data[idx] = (Math.random() - 0.5) * 0.4;
+  data[idx + 1] = (Math.random() - 0.5) * 0.4;
+  data[idx + 2] = (Math.random() - 0.5) * 0.4;
+  data[idx + 3] = 1;
+});
 
-        // 速度の法線成分を交換（同質量・完全弾性の近似）
-        const vin = vel[i3]*nx + vel[i3+1]*ny + vel[i3+2]*nz;
-        const vjn = vel[j3]*nx + vel[j3+1]*ny + vel[j3+2]*nz;
-
-        const ivx = vel[i3]   - vin*nx;
-        const ivy = vel[i3+1] - vin*ny;
-        const ivz = vel[i3+2] - vin*nz;
-        const jvx = vel[j3]   - vjn*nx;
-        const jvy = vel[j3+1] - vjn*ny;
-        const jvz = vel[j3+2] - vjn*nz;
-
-        // 法線成分を入れ替え
-        vel[i3]   = ivx + vjn*nx;
-        vel[i3+1] = ivy + vjn*ny;
-        vel[i3+2] = ivz + vjn*nz;
-        vel[j3]   = jvx + vin*nx;
-        vel[j3+1] = jvy + vin*ny;
-        vel[j3+2] = jvz + vin*nz;
+const velocityFragmentShader = `
+  uniform float delta;
+  const float H = 0.4;
+  const float K = 2.0;
+  const float MU = 0.1;
+  const float GRAV = 0.4;
+  const float R = ${R};
+  const float BOUNDS = ${BOUNDS};
+  const int COUNT = ${COUNT};
+  void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    vec4 pos = texture2D(texturePosition, uv);
+    vec4 vel = texture2D(textureVelocity, uv);
+    vec3 acc = vec3(0.0, -GRAV, 0.0);
+    for (int i = 0; i < COUNT; i++) {
+      vec2 ref = vec2(float(i % ${TEX_WIDTH}) / ${TEX_WIDTH}.0 + 0.5/${TEX_WIDTH}.0,
+                       float(i / ${TEX_WIDTH}) / ${TEX_HEIGHT}.0 + 0.5/${TEX_HEIGHT}.0);
+      vec3 p2 = texture2D(texturePosition, ref).xyz;
+      vec3 d = p2 - pos.xyz;
+      float dist2 = dot(d, d);
+      if (dist2 < H*H && dist2 > 1e-6) {
+        float dist = sqrt(dist2);
+        float q = 1.0 - dist / H;
+        vec3 n = d / dist;
+        float press = K * q * q;
+        acc -= press * n;
+        vec3 rv = texture2D(textureVelocity, ref).xyz - vel.xyz;
+        float visc = MU * q;
+        acc += rv * visc;
       }
     }
+    vel.xyz += acc * delta;
+    vec3 p = pos.xyz + vel.xyz * delta;
+    float limit = BOUNDS * 0.5 - R;
+    if (p.x > limit || p.x < -limit) vel.x *= -0.5;
+    if (p.y > limit || p.y < -limit) vel.y *= -0.5;
+    if (p.z > limit || p.z < -limit) vel.z *= -0.5;
+    gl_FragColor = vel;
   }
+`;
+
+const positionFragmentShader = `
+  uniform float delta;
+  const float R = ${R};
+  const float BOUNDS = ${BOUNDS};
+  void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    vec4 pos = texture2D(texturePosition, uv);
+    vec4 vel = texture2D(textureVelocity, uv);
+    vec3 p = pos.xyz + vel.xyz * delta;
+    float limit = BOUNDS * 0.5 - R;
+    p = clamp(p, vec3(-limit), vec3(limit));
+    gl_FragColor = vec4(p, 1.0);
+  }
+`;
+
+const velVar = gpuCompute.addVariable("textureVelocity", velocityFragmentShader, velTex);
+const posVar = gpuCompute.addVariable("texturePosition", positionFragmentShader, posTex);
+
+gpuCompute.setVariableDependencies(velVar, [velVar, posVar]);
+gpuCompute.setVariableDependencies(posVar, [velVar, posVar]);
+
+velVar.material.uniforms.delta = { value: 0 };
+posVar.material.uniforms.delta = { value: 0 };
+
+const error = gpuCompute.init();
+if (error !== null) {
+  console.error(error);
 }
 
-// InstancedMesh へ座標を反映
-const dummy = new THREE.Object3D();
-function syncInstances() {
-  for (let i = 0; i < COUNT; i++) {
-    const i3 = i * 3;
-    dummy.position.set(pos[i3], pos[i3+1], pos[i3+2]);
-    // ほんの少し回しておくと見栄えが良い（任意）
-    dummy.rotation.y += 0.01;
-    dummy.updateMatrix();
-    BALLS.setMatrixAt(i, dummy.matrix);
-  }
-  BALLS.instanceMatrix.needsUpdate = true;
+// -------- パーティクル描画 --------
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(COUNT * 3);
+const refs = new Float32Array(COUNT * 2);
+for (let i = 0; i < COUNT; i++) {
+  positions[i * 3] = 0;
+  positions[i * 3 + 1] = 0;
+  positions[i * 3 + 2] = 0;
+  const u = (i % TEX_WIDTH) / TEX_WIDTH + 0.5 / TEX_WIDTH;
+  const v = Math.floor(i / TEX_WIDTH) / TEX_HEIGHT + 0.5 / TEX_HEIGHT;
+  refs[i * 2] = u;
+  refs[i * 2 + 1] = v;
 }
+particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+particleGeo.setAttribute("reference", new THREE.BufferAttribute(refs, 2));
 
-// -------- ループ（固定ステップ 30fps / 軽量） --------
-let raf = 0, last = performance.now(), acc = 0;
-const STEP = 1000 / 20;     // 20fps
-const SPEED = 0.1;          // 速度スケール（好みで）
+const particleMat = new THREE.ShaderMaterial({
+  uniforms: {
+    texturePosition: { value: null },
+    size: { value: R * 80 }
+  },
+  vertexShader: `
+    uniform sampler2D texturePosition;
+    uniform float size;
+    attribute vec2 reference;
+    void main() {
+      vec3 pos = texture2D(texturePosition, reference).xyz;
+      vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = size / -mv.z;
+      gl_Position = projectionMatrix * mv;
+    }
+  `,
+  fragmentShader: `
+    void main() {
+      float d = length(gl_PointCoord - 0.5);
+      if (d > 0.5) discard;
+      gl_FragColor = vec4(0.33, 0.53, 1.0, 1.0);
+    }
+  `,
+  transparent: false
+});
+
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// -------- ループ --------
+let raf = 0, last = performance.now(), accTime = 0;
+const STEP = 1000 / 20; // 20fps
+const SPEED = 0.1;      // 速度スケール
 function loop(now) {
   raf = requestAnimationFrame(loop);
-  acc += (now - last); last = now;
+  accTime += (now - last); last = now;
 
-  while (acc >= STEP) {
+  while (accTime >= STEP) {
     const dt = (STEP / 1000) * SPEED;
-
-    //立方体の回転
     box.rotation.x += 0.0008;
     box.rotation.y -= 0.0012;
 
-    //球体の位置更新
-    for (let i = 0; i < COUNT; i++) {
-      const i3 = i * 3;
-      pos[i3]     += vel[i3]   * dt;
-      pos[i3 + 1] += vel[i3+1] * dt;
-      pos[i3 + 2] += vel[i3+2] * dt;
-      reflectWalls(i3);
-    }
+    velVar.material.uniforms.delta.value = dt;
+    posVar.material.uniforms.delta.value = dt;
+    gpuCompute.compute();
 
-    // 球-球衝突
-    collidePairs(dt);
-
-    acc -= STEP;
+    accTime -= STEP;
   }
 
-  syncInstances();
+  particleMat.uniforms.texturePosition.value = gpuCompute.getCurrentRenderTarget(posVar).texture;
   renderer.render(scene, camera);
 }
 raf = requestAnimationFrame(loop);
@@ -208,7 +219,7 @@ raf = requestAnimationFrame(loop);
 function fit() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h, false);
-  camera.aspect = w/h;
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", fit);
@@ -218,7 +229,7 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
     cancelAnimationFrame(raf);
   } else {
-    last = performance.now(); acc = 0;
+    last = performance.now(); accTime = 0;
     raf = requestAnimationFrame(loop);
   }
 });
