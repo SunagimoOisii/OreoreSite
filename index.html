@@ -47,6 +47,27 @@
     <p>&copy; 2025 Sunagimo</p>
   </footer>
 
+  <!-- Boot Overlay: 起動時ロゴ -->
+  <div id="boot-overlay" aria-hidden="true">
+    <div class="boot-frame">
+      <div class="boot-scanlines"></div>
+
+      <!-- ロゴ -->
+      <div class="boot-logo">
+        <img src="img/logo.png" alt="" class="boot-mark" />
+        <div class="boot-text">Sunagimo</div>
+      </div>
+
+      <!-- ロードバー -->
+      <div class="boot-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="boot-progress__bar"></div>
+      </div>
+
+      <!-- Skipボタン -->
+      <button id="boot-skip" class="boot-skip" type="button" aria-label="Skip intro">Skip</button>
+    </div>
+  </div>
+  
   <script type="importmap">
   {
     "imports":
