@@ -6,23 +6,23 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 // ===== トグル =====
-const PS1_MODE = true;          // 低解像/ニアレスト/量子化
-const AFFINE_STRENGTH = 0.75;   // 0.0=透視補正(通常), 1.0=強いアフィン歪み
+const PS1_MODE = true;         // ← ここでPS1風ON/OFF
+const AFFINE_STRENGTH = 0.65;  // 0.0=透視補正, 1.0=強アフィン（PS1_MODE=true時のみ使用）
 
-// ===== レンダラーをCSSサイズに同期（PS1: 内部解像を落とす）=====
+// ===== レンダラーをCSSサイズに同期 =====
 function resizeRendererToDisplaySize() {
   const rect = canvas.getBoundingClientRect();
   const w = Math.max(1, rect.width | 0);
   const h = Math.max(1, rect.height | 0);
 
-  renderer.setPixelRatio(1);          // 高DPIオフでジャギ出す
-  renderer.setSize(w, h, false);
-
   if (PS1_MODE) {
-    const scale = 0.5;                // 0.5〜0.85 好みで
+    renderer.setPixelRatio(1); // 高DPIオフでジャギ感🎮
+    const scale = 0.5;         // 内部解像度を下げる（0.5〜0.85）
     renderer.setSize((w * scale) | 0, (h * scale) | 0, false);
     renderer.domElement.style.imageRendering = "pixelated";
   } else {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
     renderer.domElement.style.imageRendering = "";
   }
   return { w, h };
@@ -39,16 +39,21 @@ camera.lookAt(0, 0, 0);
 const cubeSize = 1.8;
 const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 
-// ===== 自画像テクスチャ（PS1味設定）=====
+// ===== テクスチャ =====
 const texture = new THREE.TextureLoader().load("img/me.jpg", (tex) => {
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.generateMipmaps = false;
-  tex.minFilter = THREE.NearestFilter;
-  tex.magFilter = THREE.NearestFilter;
-  tex.anisotropy = 0;
+  if (PS1_MODE) {
+    // PS1味：ニアレスト & ミップ無し
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.NearestFilter;
+    tex.magFilter = THREE.NearestFilter;
+    tex.anisotropy = 0;
+  }
 });
 
-// ===== アフィン補間シェーダ（安全版：ミックス＋クランプ）=====
+// ===== シェーダ（アフィン／通常） =====
+
+// アフィン（擬似）：透視UVとアフィンUVをmix + clamp（黒抜け防止）
 function makeAffineMaterial(map, toGray = false) {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -56,17 +61,14 @@ function makeAffineMaterial(map, toGray = false) {
       uAffine: { value: AFFINE_STRENGTH }
     },
     vertexShader: `
-      varying vec2 vUv_persp;     // 通常の透視補正UV（three標準）
-      varying vec2 vUv_affineRaw; // アフィン用の“生”UV（w掛け）
-      varying float vFragW;       // クリップ後の w（frag側の割り戻しに使う）
-
+      varying vec2 vUv_persp;
+      varying vec2 vUv_affineRaw;
+      varying float vFragW;
       void main () {
         vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         vFragW = clip.w;
-
-        vUv_persp   = uv;          // three標準のvaryingは自動で透視補正される
-        vUv_affineRaw = uv * clip.w; // アフィン用：先に w を掛けておく
-
+        vUv_persp = uv;
+        vUv_affineRaw = uv * clip.w;
         gl_Position = clip;
       }
     `,
@@ -77,18 +79,11 @@ function makeAffineMaterial(map, toGray = false) {
       varying vec2 vUv_persp;
       varying vec2 vUv_affineRaw;
       varying float vFragW;
-
       void main () {
-        // 透視補正UV
         vec2 uv_p = vUv_persp;
-
-        // 擬似アフィンUV：w で割り戻し（ここが歪みの肝）
         vec2 uv_a = vUv_affineRaw / vFragW;
-
-        // 安定化：UVをミックス＆クランプ（黒抜け防止）
         vec2 uv = mix(uv_p, uv_a, clamp(uAffine, 0.0, 1.0));
         uv = clamp(uv, 0.0, 1.0);
-
         vec4 c = texture2D(map, uv);
         ${toGray
           ? `float g = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -103,17 +98,54 @@ function makeAffineMaterial(map, toGray = false) {
   });
 }
 
+// 透視補正アリ（通常）：three標準のvaryingでOK
+function makePerspMaterial(map, toGray = false) {
+  return new THREE.ShaderMaterial({
+    uniforms: { map: { value: map } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv; // threeが自動で透視補正して補間
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      precision mediump float;
+      uniform sampler2D map;
+      varying vec2 vUv;
+      void main() {
+        vec4 c = texture2D(map, vUv);
+        ${toGray
+          ? `float g = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+             gl_FragColor = vec4(vec3(g), c.a);`
+          : `gl_FragColor = c;`
+        }
+      }
+    `,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true
+  });
+}
+
+// ===== マテリアル割り当て（PS1_MODEで切替） =====
 // 面順序: +X, -X, +Y, -Y, +Z(正面), -Z
-const matColorAffine = makeAffineMaterial(texture, false); // 正面カラー
-const matGrayAffine  = makeAffineMaterial(texture, true);  // 他はグレー
+let matColor, matGray;
+if (PS1_MODE) {
+  matColor = makeAffineMaterial(texture, false); // 正面カラー(アフィン)
+  matGray  = makeAffineMaterial(texture, true);  // 他グレー(アフィン)
+} else {
+  matColor = makePerspMaterial(texture, false);  // 正面カラー(通常)
+  matGray  = makePerspMaterial(texture, true);   // 他グレー(通常)
+}
 
 const materials = [
-  matGrayAffine, // +X
-  matGrayAffine, // -X
-  matGrayAffine, // +Y
-  matGrayAffine, // -Y
-  matColorAffine, // +Z
-  matGrayAffine  // -Z
+  matGray,  // +X
+  matGray,  // -X
+  matGray,  // +Y
+  matGray,  // -Y
+  matColor, // +Z（正面カラー）
+  matGray   // -Z
 ];
 
 const cube = new THREE.Mesh(boxGeo, materials);
@@ -139,7 +171,7 @@ function fitCameraToBox() {
   const hFov  = 2.0 * Math.atan(Math.tan(vFov / 2.0) * camera.aspect);
   const hDist = r / Math.tan(hFov / 2.0);
 
-  const margin = PS1_MODE ? 1.35 : 1.25;
+  const margin = 1.1;
   const dist = Math.max(vDist, hDist) * margin;
 
   camera.position.set(0, 0, dist);
@@ -150,7 +182,7 @@ function fitCameraToBox() {
   controls.update();
 }
 
-// ===== 量子化による“PS1ゆらぎ”（お好みで）=====
+// ===== PS1ゆらぎ（量子化）=====
 function snap(v, step) { return Math.round(v / step) * step; }
 function applyPS1Jitter() {
   if (!PS1_MODE) return;
