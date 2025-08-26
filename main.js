@@ -129,3 +129,15 @@ if (CONFIG.PS1_MODE) {
   }
   animate();
 }
+
+// ===== Works: Disc Interaction =====
+document.querySelectorAll('#works .disc-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (item.classList.contains('open')) {
+      item.classList.remove('open');
+      return;
+    }
+    document.querySelectorAll('#works .disc-item.open').forEach(i => i.classList.remove('open'));
+    item.classList.add('open');
+  });
+});
