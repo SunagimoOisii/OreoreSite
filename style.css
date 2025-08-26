@@ -1,192 +1,78 @@
-body
-{
-  font-family: 'Roboto', sans-serif;
-  line-height: 1.6;
+/* ===============================
+   Global tokens
+   =============================== */
+:root {
+  --bg: #111;
+  --text: #eee;
+  --muted: #aaa;
+  --card: #1a1a1a;
+  --accent: royalblue;
+}
+
+/* ===============================
+   Base
+   =============================== */
+body {
   margin: 0;
-  :root {
-    --bg: #f7f7f8;
-    --card: #ffffff;
-    --text: #222222;
-    --muted: #666666;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body
-  {
-    margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
-
-  header
-  {
-    padding: 48px 16px 24px;
-    text-align: center;
-  }
-
-  .tagline
-  {
-    margin: 6px 0 0;
-    color: var(--muted);
-  }
-
-  .container
-  {
-    max-width: 900px;
-    margin: 24px auto;
-    padding: 0 16px 64px;
-  }
-
-  .profile
-  {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    background: var(--card);
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-
-  .profile img
-  {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 12px;
-  }
-
-  .bio p
-  {
-    margin: 0 0 8px 0;
-    color: var(--text);
-  }
-
-  section h2
-  {
-    margin-top: 0;
-  }
-
-  footer
-  {
-    text-align: center;
-    color: var(--muted);
-    padding: 36px 8px;
-  }
-
-  @media (max-width: 600px)
-  {
-    .profile
-    {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .profile img
-    {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-  }
-  color: #333333;
+  font-family: 'PixelMplus10', monospace; /* 日本語もドット風に */
+  font-size: 14px;
+  line-height: 1.5;
+  image-rendering: pixelated;             /* ドット感を強調 */
+  background: var(--bg);
+  color: var(--text);
 }
 
-h1
-{
-  color: royalblue;
+/* 見出しなど */
+h1 { color: var(--accent); }
+section h2 {
+  margin-top: 0;
 }
 
-button
-{
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  background: royalblue;
-  color: white;
-  cursor: pointer;
+/* ===============================
+   Header / Nav
+   =============================== */
+header {
+  text-align: center;
+  padding: 48px 16px 24px;
+}
+.tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
 }
 
-button:hover
-{
-  background: darkblue;
+/* ===============================
+   Layout
+   =============================== */
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px 64px;
 }
 
-/* スクロール時にふわっと表示するための設定 */
-.fade-in
-{
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in.visible
-{
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.tabs {
+/* ===============================
+   Profile block (About)
+   =============================== */
+.profile {
   display: flex;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: #333;
+  gap: 16px;
+  align-items: center;
+  background: var(--card);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.profile img {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.bio p {
+  margin: 0 0 8px 0;
+  color: var(--text);
 }
 
-.tab {
-  padding: 10px 20px;
-  cursor: pointer;
-  color: white;
-  background: #444;
-  border: 1px solid #555;
-}
-
-.tab:hover {
-  background: #555;
-}
-
-.tab.active {
-  background: royalblue;
-}
-
-.tab-content {
-  display: none;
-}
-
-.tab-content:not(.hidden) {
-  display: block;
-}
-
-.hidden {
-  display: none;
-}
-
-@media (max-width: 600px)
-{
-  header, main, footer
-  {
-    padding: 10px;
-  }
-  nav ul
-  {
-    flex-direction: column;
-    gap: 10px;
-  }
-  section
-  {
-    margin: 10px 0;
-    padding: 10px;
-  }
-}
-
-/* 3Dアバターの独立セクション */
+/* 3Dアバターの独立セクション（About内のcanvas） */
 .avatar-wrap {
   max-width: 900px;
   margin: 0 auto 24px auto;
@@ -195,7 +81,6 @@ button:hover
   justify-content: center;
   align-items: center;
 }
-
 #avatar-canvas {
   width: 325px;   /* お好みで */
   height: 325px;  /* お好みで */
@@ -204,15 +89,124 @@ button:hover
   clip-path: none;
   mask-image: none;
   mask: none;
-  background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0 / 20px 20px;
-  border: 1px solid #eee;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background:#ddd
 }
 
-/* スマホで少し小さく */
+/* ===============================
+   Footer
+   =============================== */
+footer {
+  text-align: center;
+  color: var(--muted);
+  padding: 36px 8px;
+}
+
+/* ===============================
+   Buttons (任意で使用)
+   =============================== */
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+button:hover { background: #2f4fb7; }
+
+/* ===============================
+   Tabs (任意で使用)
+   =============================== */
+.tabs {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #333;
+}
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  color: white;
+  background: #444;
+  border: 1px solid #555;
+}
+.tab:hover { background: #555; }
+.tab.active { background: var(--accent); }
+.tab-content { display: none; }
+.tab-content:not(.hidden) { display: block; }
+.hidden { display: none; }
+
+/* ===============================
+   Fade-in (任意で使用)
+   =============================== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===============================
+   Responsive
+   =============================== */
 @media (max-width: 600px) {
+  header, main, footer { padding: 10px; }
+
+  .profile {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
   #avatar-canvas {
     width: 200px;
     height: 200px;
   }
+
+  nav ul { flex-direction: column; gap: 10px; }
+  section { margin: 10px 0; padding: 10px; }
+}
+
+/* ==== CRT風オーバーレイ（3Dキャンバスだけ） ==== */
+.avatar-crt {
+  position: relative;
+  display: inline-block; /* キャンバスサイズにフィット */
+}
+
+/* 走査線 + ビネット */
+.avatar-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* 走査線（1px 明 → 2px 間隔）＋ ビネット */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.15) 0px,
+      rgba(255,255,255,0.15) 1px,
+      rgba(0,0,0,0.00)       1px,
+      rgba(0,0,0,0.00)       3px
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(0,0,0,0.00) 62%,
+      rgba(0,0,0,0.30) 100%
+    );
+}
+
+/* 小画面は控えめに（任意） */
+@media (max-width: 600px) {
+  .avatar-crt::after { opacity: 0.6; }
 }
