@@ -31,10 +31,15 @@
 
     <section id="works">
       <h2>Works</h2>
-      <ul>
-        <li>プロジェクトA — 実装がダルい</li>
-        <li>プロジェクトB — 実装がダルい</li>
-      </ul>
+      <div class="works-gallery">
+        <img id="work-preview" src="img/AlienChan.png" alt="プロジェクトA" />
+        <div class="work-thumbs">
+          <button class="work-thumb active" data-index="0" style="background-image: url('img/AlienChan.png');" aria-label="プロジェクトA"></button>
+          <button class="work-thumb" data-index="1" style="background-image: url('img/me.jpg');" aria-label="プロジェクトB"></button>
+          <button class="work-thumb" data-index="2" style="background-image: url('img/logo.png');" aria-label="プロジェクトC"></button>
+        </div>
+        <p id="work-description">プロジェクトA — 実装がダルい</p>
+      </div>
     </section>
 
     <section id="contact">
@@ -77,6 +82,7 @@
   }
   </script>
   <script type="module" src="./main.js"></script>
+  <script type="module" src="./works.js"></script>
 </body>
 
 </html>
