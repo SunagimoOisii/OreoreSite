@@ -1,6 +1,5 @@
 // title-tricks.js
 // h1 見出しの各文字に仕掛けを登録するモジュール
-// - 先頭の S をクリックすると全体の文字色がランダムに変わる
 
 const titleElem = document.querySelector('main h1');
 const text = titleElem.textContent;
@@ -52,4 +51,22 @@ registerTrick(0, () => {
   charElems.forEach((el) => {
     el.style.color = randomColor();
   });
+});
+
+// 2 文字目 U の仕掛け登録: 背景を UFO が横切る
+registerTrick(1, () => {
+  const count = 20;
+  for (let i = 0; i < count; i++) {
+    const ufo = document.createElement('span');
+    ufo.className = 'ufo';
+    ufo.textContent = '\u{1F6F8}';
+    ufo.style.top = `${Math.random() * 100}vh`;
+    ufo.style.animationDelay = `${Math.random()}s`;
+    const duration = 2 + Math.random() * 2;
+    ufo.style.animationDuration = `${duration}s`;
+    document.body.appendChild(ufo);
+    ufo.addEventListener('animationend', () => {
+      ufo.remove();
+    });
+  }
 });

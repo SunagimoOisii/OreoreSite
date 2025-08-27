@@ -45,22 +45,41 @@ h1
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Edge / IE10+ */
 }
-h1:hover
-{
-  color: rgba(63, 255, 254, 1);
-}
-
 /* h1 の各文字 */
 .title-char
 {
   display: inline-block;
   cursor: pointer;
 }
+.title-char:hover
+{
+  color: rgba(63, 255, 254, 1);
+}
+
 section h2
 {
   font-size: 200%;
   margin-top: 48px;
   margin-bottom: 8px;
+}
+
+/* 背景を横切る UFO */
+.ufo
+{
+  position: fixed;
+  left: -10vw;
+  top: 0;
+  z-index: 100;
+  font-size: 2rem;
+  pointer-events: none;
+  animation: ufo-fly 3s linear forwards;
+}
+@keyframes ufo-fly
+{
+  0%
+  { transform: translateX(0vw); }
+  100%
+  { transform: translateX(110vw); }
 }
 
 /* ===============================
