@@ -214,7 +214,7 @@ export class BgPhysics {
     {
       const i3 = i * 3;
       this._dummy.position.set(this.pos[i3], this.pos[i3 + 1], this.pos[i3 + 2]);
-      this._dummy.rotation.y += 0.01;
+      this._dummy.rotation.y += 0.00005;
       this._dummy.updateMatrix();
       this.mesh.setMatrixAt(i, this._dummy.matrix);
     }
