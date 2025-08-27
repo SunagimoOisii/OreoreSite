@@ -1,0 +1,19 @@
+/* ===============================
+   Layout
+   =============================== */
+.container 
+{
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px 64px;
+}
+
+/* ===============================
+   Footer
+   =============================== */
+footer 
+{
+  text-align: center;
+  color: var(--muted);
+  padding: 36px 8px;
+}
