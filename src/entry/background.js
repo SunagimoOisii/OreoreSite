@@ -1,12 +1,12 @@
-// bg.js
+// background.js
 // 背景アニメーション：立方体内で球が跳ね回るシンプルなデモ
 // - 既存の #bg-canvas 要素へ描画
 // - 壁との反射と球同士の弾性衝突を実装
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-import { createRenderer, fitToCanvas } from "./lib/renderer.js";
-import { runFixedStepLoop } from "./lib/utils.js";
-import { BgPhysics } from "./lib/bgPhysics.js";
+import { createRenderer, fitToCanvas } from "../../lib/renderer.js";
+import { runFixedStepLoop } from "../../lib/utils.js";
+import { BgPhysics } from "../../lib/bgPhysics.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)
