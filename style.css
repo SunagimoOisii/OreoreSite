@@ -40,6 +40,14 @@ h1
   color: var(--accent);
   font-size: 400%;
   margin-bottom: 0;
+  user-select: none; /* モダンブラウザ */
+  -webkit-user-select: none; /* Chrome / Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Edge / IE10+ */
+}
+h1:hover
+{
+  color: rgba(63, 255, 254, 1);
 }
 
 /* h1 の各文字 */
