@@ -32,10 +32,21 @@
 
     <section id="works">
       <h2>Works</h2>
-      <ul>
-        <li>プロジェクトA — 実装がダルい</li>
-        <li>プロジェクトB — 実装がダルい</li>
-      </ul>
+      <div class="works-tabs">
+        <button type="button" class="active" data-category="game">Game</button>
+        <button type="button" data-category="tool">Tool</button>
+        <button type="button" data-category="other">Other</button>
+      </div>
+      <div class="works-view">
+        <button type="button" class="arrow arrow-left" aria-label="前へ"></button>
+        <div class="works-content">
+          <div class="works-image">
+            <img src="" alt="">
+          </div>
+          <ul class="works-desc"></ul>
+        </div>
+        <button type="button" class="arrow arrow-right" aria-label="次へ"></button>
+      </div>
     </section>
 
     <section id="contact">
@@ -79,6 +90,7 @@
   </script>
   <script type="module" src="./main.js"></script>
   <script type="module" src="./bg.js"></script>
+  <script type="module" src="./works.js"></script>
 </body>
 
 </html>
