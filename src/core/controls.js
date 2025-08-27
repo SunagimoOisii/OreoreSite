@@ -1,6 +1,6 @@
 // src/core/controls.js
 // OrbitControls を薄くラップし、ズームやパンを禁止する
-import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 /**
  * マウス操作用の OrbitControls を生成。
