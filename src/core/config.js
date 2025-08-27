@@ -1,4 +1,4 @@
-// lib/config.js
+// src/core/config.js
 // PS1 風レンダリングのための各種設定値
 export const CONFIG = {
   PS1_MODE: true, // PS1 表現を有効にするか
