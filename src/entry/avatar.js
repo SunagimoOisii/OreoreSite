@@ -4,7 +4,7 @@
 // - ブートオーバーレイとリサイズ処理を管理
 import * as THREE from "three";
 const { BoxGeometry, TetrahedronGeometry, SphereGeometry, TorusGeometry } = THREE;
-import { LoopSubdivision } from "three/addons/modifiers/LoopSubdivision.js";
+import { LoopSubdivision } from "three-subdivide";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
@@ -28,7 +28,7 @@ setupResize(renderer, canvas, camera, CONFIG, post);
 
 const shapeButtons = document.querySelectorAll(".avatar-shapes button");
 
-const TARGET_PIECES = 200;     // 生成する破片の目標数
+const TARGET_PIECES = 100;     // 生成する破片の目標数
 
 let isRotating = true;      // 回転継続フラグ
 let isExploded = false;     // バラバラ状態か
@@ -86,30 +86,48 @@ function collectVertices(geometry)
   // TARGET_PIECES に達するまで細分化を繰り返す
   while (pos.count < TARGET_PIECES)
   {
-    const mod = new LoopSubdivision(1);
-    mod.modify(geo);
+    let next;
+
+    if (LoopSubdivision && typeof LoopSubdivision.modify === "function")
+      {
+      // three-subdivide の .modify() 形式
+      next = LoopSubdivision.modify(geo, 1,
+        {
+        //uvSmooth: true/false, split: true/false などオプションを指定可
+      });
+    } else if (typeof LoopSubdivision === "function")
+      {
+      // three-subdivide の関数形式
+      next = LoopSubdivision(geo, 1);
+    } 
+    else
+    {
+      throw new Error("Unsupported LoopSubdivision API");
+    }
+
+    // メモリリーク防止
+    if (next !== geo) geo.dispose();
+
+    geo = next;
     pos = geo.attributes.position;
   }
 
   const vertices = [];
 
-  if (pos.count > TARGET_PIECES)
-  {
+  if (pos.count > TARGET_PIECES) {
     // ランダムサンプリングで TARGET_PIECES 個の頂点を抽出
     const indices = [...Array(pos.count).keys()];
-    for (let i = 0; i < TARGET_PIECES; i++)
-    {
+    for (let i = 0; i < TARGET_PIECES; i++) {
       const idx = Math.floor(Math.random() * indices.length);
       const vi = indices.splice(idx, 1)[0];
       vertices.push(new THREE.Vector3().fromBufferAttribute(pos, vi));
     }
-  }
-  else
-  {
-    // そのまま全頂点を使用
-    for (let i = 0; i < pos.count; i++)
+  } else {
+    for (let i = 0; i < pos.count; i++) {
       vertices.push(new THREE.Vector3().fromBufferAttribute(pos, i));
+    }
   }
+
   geo.dispose();
   return vertices;
 }
