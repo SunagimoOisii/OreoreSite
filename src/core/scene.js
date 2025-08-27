@@ -18,7 +18,7 @@ export function createSceneGraph(THREE, cfg)
   const baseSize = 2.25;
   const geo = new THREE.BoxGeometry(baseSize, baseSize, baseSize);
 
-  const tex = new THREE.TextureLoader().load("img/me.jpg", t => {
+  const tex = new THREE.TextureLoader().load("../img/me.jpg", t => {
     t.colorSpace = THREE.SRGBColorSpace;
     if (cfg.PS1_MODE)
     {
