@@ -4,6 +4,7 @@
 // - ブートオーバーレイとリサイズ処理を管理
 import * as THREE from "three";
 const { BoxGeometry, TetrahedronGeometry, SphereGeometry, TorusGeometry } = THREE;
+import { LoopSubdivision } from "three/addons/modifiers/LoopSubdivision.js";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
@@ -26,6 +27,8 @@ initBootOverlay();
 setupResize(renderer, canvas, camera, CONFIG, post);
 
 const shapeButtons = document.querySelectorAll(".avatar-shapes button");
+
+const TARGET_PIECES = 200;     // 生成する破片の目標数
 
 let isRotating = true;      // 回転継続フラグ
 let isExploded = false;     // バラバラ状態か
@@ -73,6 +76,44 @@ function changeAvatarShape(type)
   avatarMesh.geometry = geo;
 }
 
+// ジオメトリから TARGET_PIECES 個の頂点を取得する
+function collectVertices(geometry)
+{
+  // 元ジオメトリを複製し、インデックスを外す
+  let geo = geometry.clone().toNonIndexed();
+  let pos = geo.attributes.position;
+
+  // TARGET_PIECES に達するまで細分化を繰り返す
+  while (pos.count < TARGET_PIECES)
+  {
+    const mod = new LoopSubdivision(1);
+    mod.modify(geo);
+    pos = geo.attributes.position;
+  }
+
+  const vertices = [];
+
+  if (pos.count > TARGET_PIECES)
+  {
+    // ランダムサンプリングで TARGET_PIECES 個の頂点を抽出
+    const indices = [...Array(pos.count).keys()];
+    for (let i = 0; i < TARGET_PIECES; i++)
+    {
+      const idx = Math.floor(Math.random() * indices.length);
+      const vi = indices.splice(idx, 1)[0];
+      vertices.push(new THREE.Vector3().fromBufferAttribute(pos, vi));
+    }
+  }
+  else
+  {
+    // そのまま全頂点を使用
+    for (let i = 0; i < pos.count; i++)
+      vertices.push(new THREE.Vector3().fromBufferAttribute(pos, i));
+  }
+  geo.dispose();
+  return vertices;
+}
+
 function explodeAvatar()
 {
   isExploded = true;
@@ -81,14 +122,13 @@ function explodeAvatar()
   explodeGroup.position.copy(avatarMesh.position);
   explodeGroup.rotation.copy(avatarMesh.rotation);
 
-  const pos = avatarMesh.geometry.attributes.position;
+  const vertices = collectVertices(avatarMesh.geometry);
   const pieceGeo = new BoxGeometry(baseSize / 15, baseSize / 15, baseSize / 15);
   explodeGroup.userData.pieceGeo = pieceGeo;
   pieceVelocity = [];
 
-  for (let i = 0; i < pos.count; i++)
+  vertices.forEach(v =>
   {
-    const v = new THREE.Vector3().fromBufferAttribute(pos, i);
     const m = new THREE.Mesh(pieceGeo, avatarMesh.material);
     m.position.copy(v);
     explodeGroup.add(m);
@@ -98,7 +138,7 @@ function explodeAvatar()
       dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
     dir.normalize().multiplyScalar(0.5);
     pieceVelocity.push(dir);
-  }
+  });
 
   scene.add(explodeGroup);
   avatarMesh.visible = false;
