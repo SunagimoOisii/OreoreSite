@@ -100,6 +100,80 @@ header {
 }
 
 /* ===============================
+   Works
+   =============================== */
+#works {
+  position: relative;
+}
+.works-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.works-tabs button {
+  background: var(--card);
+  color: var(--text);
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.works-tabs button.active {
+  background: #333;
+  color: #fff;
+}
+.works-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.arrow {
+  width: 0;
+  height: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  padding: 0;
+}
+.arrow-left {
+  border-right: 20px solid var(--text);
+}
+.arrow-right {
+  border-left: 20px solid var(--text);
+}
+.works-content {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+}
+.works-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-height: 300px;
+}
+.works-image img {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+}
+.works-desc {
+  margin-top: 8px;
+}
+
+/* ===============================
    Footer
    =============================== */
 footer {
