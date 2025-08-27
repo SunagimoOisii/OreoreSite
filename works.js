@@ -1,3 +1,6 @@
+// works.js
+// 制作物ギャラリーのタブ切替と表示処理
+// - WORKS 定義に従い画像と説明を更新
 const WORKS = {
   game: [
     {
@@ -48,6 +51,9 @@ const right = document.querySelector('.arrow-right');
 let currentCategory = 'game';
 let index = 0;
 
+/**
+ * 現在のカテゴリから作品を1件選んで表示する。
+ */
 function render() {
   const list = WORKS[currentCategory] || [];
   if (list.length === 0) {
