@@ -11,7 +11,7 @@ import { createRenderer,
   fitToCanvas } from "../core/renderer.js";
 import { createSceneGraph } from "../core/scene.js";
 import { applyPS1Jitter, runFixedStepLoop } from "../core/utils.js";
-import { initBootOverlay } from "../core/bootOverlay.js";
+import { initBootOverlay } from "../core/boot-overlay.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
