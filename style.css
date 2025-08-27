@@ -138,6 +138,17 @@ section h2
   to   { transform: rotate(3600deg); }
 }
 
+/* O クリック時に他要素を一時非表示 */
+body.hide-all > *:not(main)
+{
+  display: none !important;
+}
+
+body.hide-all main > *:not(h1)
+{
+  display: none !important;
+}
+
 /* ===============================
    Layout
    =============================== */

@@ -111,3 +111,11 @@ registerTrick(5, () => {
 registerTrick(6, () => {
   decreaseBalls();
 });
+
+// 8 文字目 O の仕掛け登録: h1 以外を 5 秒間非表示
+registerTrick(7, () => {
+  document.body.classList.add('hide-all');
+  setTimeout(() => {
+    document.body.classList.remove('hide-all');
+  }, 5000);
+});
