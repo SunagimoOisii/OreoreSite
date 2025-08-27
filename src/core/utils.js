@@ -34,13 +34,23 @@ export function applyPS1Jitter(THREE, camera, cube, cfg)
  * @param {number} stepMs 1 ステップ当たりのミリ秒（0 なら可変）
  * @param {(dtSec:number) => void} update 更新処理
  * @param {() => void} render 描画処理
- * @returns {{ start: () => void, stop: () => void }} 制御関数
+ * @returns {{ start: () => void, stop: () => void, dispose: () => void }} 制御関数
  */
 export function runFixedStepLoop(stepMs, update, render)
 {
   let raf = 0;
   let acc = 0;
   let last = 0;
+  let listening = false;
+
+  // visibilitychange のリスナーを保持
+  const onVisibilityChange = () =>
+  {
+    if (document.visibilityState === 'hidden')
+      loopStop();
+    else
+      loopStart();
+  };
 
   function frame(now)
   {
@@ -65,26 +75,43 @@ export function runFixedStepLoop(stepMs, update, render)
     render();
   }
 
-  function start()
+  function loopStart()
   {
     last = performance.now();
     acc = 0;
     raf = requestAnimationFrame(frame);
   }
 
-  function stop()
+  function loopStop()
   {
     cancelAnimationFrame(raf);
   }
 
-  document.addEventListener('visibilitychange', () =>
+  function start()
   {
-    if (document.visibilityState === 'hidden')
-      stop();
-    else
-      start();
-  });
+    if (!listening)
+    {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      listening = true;
+    }
+    loopStart();
+  }
+
+  function stop()
+  {
+    if (listening)
+    {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      listening = false;
+    }
+    loopStop();
+  }
+
+  function dispose()
+  {
+    stop();
+  }
 
   start();
-  return { start, stop };
+  return { start, stop, dispose };
 }
