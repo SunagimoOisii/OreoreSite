@@ -75,3 +75,27 @@ registerTrick(1, () => {
 registerTrick(2, () => {
   document.title = '君ってデバッガー？';
 });
+
+// 4 文字目 A の仕掛け登録: 画面を暗転させ右上に「ビデオ」を表示
+registerTrick(3, () => {
+  const overlay = document.createElement('div');
+  overlay.id = 'video-overlay';
+  overlay.textContent = 'ビデオ';
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+  }, 5000);
+});
+
+// 5 文字目 G の仕掛け登録: 全文字を回転
+registerTrick(4, () => {
+  charElems.forEach((el) => {
+    el.classList.remove('rotate');
+    void el.offsetWidth;
+    el.classList.add('rotate');
+    setTimeout(() => {
+      el.classList.remove('rotate');
+    }, 5000);
+  });
+});
