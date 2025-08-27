@@ -14,7 +14,6 @@
    =============================== */
 body 
 {
-  margin: 0;
   font-family: 'PixelMplus10', monospace; /* 日本語もドット風に */
   font-size: 20px;
   line-height: 1.5;
@@ -38,7 +37,9 @@ h1
 { color: var(--accent); }
 section h2 
 {
-  margin-top: 0;
+  font-size: 200%;
+  margin-top: 48px;
+  margin-bottom: 8px;
 }
 
 /* ===============================
@@ -47,6 +48,7 @@ section h2
 header 
 {
   text-align: center;
+  font-size: 200%;
   padding: 48px 16px 24px;
 }
 
@@ -117,7 +119,6 @@ header
 #works 
 {
   position: relative;
-  margin-top: 48px;
 }
 .works-tabs 
 {
