@@ -1,7 +1,7 @@
 // title-tricks.js
 // h1 見出しの各文字に仕掛けを登録するモジュール
 
-import { increaseBalls, decreaseBalls, switchToSphereMode } from './background.js';
+import { increaseBalls, decreaseBalls } from './background.js';
 
 const titleElem = document.querySelector('main h1');
 const text = titleElem.textContent;
@@ -147,4 +147,16 @@ registerTrick(9, () => {
 // 10 文字目 O の仕掛け登録: 背景の枠を球体に変更
 registerTrick(10, () => {
   switchToSphereMode();
+});
+
+// 13 文字目 E の仕掛け登録: h1 の文言を一時的に変更
+registerTrick(13, () => {
+  const original = [...charElems];
+  titleElem.textContent = 'もうネタがない';
+  setTimeout(() => {
+    titleElem.textContent = '';
+    original.forEach((el) => {
+      titleElem.appendChild(el);
+    });
+  }, 5000);
 });
