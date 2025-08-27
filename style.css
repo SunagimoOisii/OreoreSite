@@ -35,13 +35,20 @@ body
 }
 
 /* 見出しなど */
-h1 
-{ 
+h1
+{
   color: var(--accent);
   font-size: 400%;
   margin-bottom: 0;
 }
-section h2 
+
+/* h1 の各文字 */
+.title-char
+{
+  display: inline-block;
+  cursor: pointer;
+}
+section h2
 {
   font-size: 200%;
   margin-top: 48px;
