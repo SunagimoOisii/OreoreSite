@@ -54,9 +54,11 @@ let index = 0;
 /**
  * 現在のカテゴリから作品を1件選んで表示する。
  */
-function render() {
+function render()
+{
   const list = WORKS[currentCategory] || [];
-  if (list.length === 0) {
+  if (list.length === 0)
+  {
     image.style.display = 'none';
     descList.innerHTML = '<li>作品がありません</li>';
     return;
@@ -86,14 +88,16 @@ tabs.forEach((btn) => {
 
 left.addEventListener('click', () => {
   const list = WORKS[currentCategory] || [];
-  if (list.length === 0) return;
+  if (list.length === 0)
+    return;
   index = (index - 1 + list.length) % list.length;
   render();
 });
 
 right.addEventListener('click', () => {
   const list = WORKS[currentCategory] || [];
-  if (list.length === 0) return;
+  if (list.length === 0)
+    return;
   index = (index + 1) % list.length;
   render();
 });

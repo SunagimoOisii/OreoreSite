@@ -1,7 +1,8 @@
 /* ===============================
    Global tokens
    =============================== */
-:root {
+:root 
+{
   --bg: #eee;
   --text: #111;
   --muted: #aaa;
@@ -11,7 +12,8 @@
 /* ===============================
    Base
    =============================== */
-body {
+body 
+{
   margin: 0;
   font-family: 'PixelMplus10', monospace; /* 日本語もドット風に */
   font-size: 20px;
@@ -21,7 +23,8 @@ body {
   color: var(--text);
 }
 
-#bg-canvas {
+#bg-canvas 
+{
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -31,15 +34,18 @@ body {
 }
 
 /* 見出しなど */
-h1 { color: var(--accent); }
-section h2 {
+h1 
+{ color: var(--accent); }
+section h2 
+{
   margin-top: 0;
 }
 
 /* ===============================
    Header / Nav
    =============================== */
-header {
+header 
+{
   text-align: center;
   padding: 48px 16px 24px;
 }
@@ -47,7 +53,8 @@ header {
 /* ===============================
    Layout
    =============================== */
-.container {
+.container 
+{
   max-width: 900px;
   margin: 24px auto;
   padding: 0 16px 64px;
@@ -56,7 +63,8 @@ header {
 /* ===============================
    Profile block (About)
    =============================== */
-.profile {
+.profile 
+{
   --text: #eee;
   backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
   -webkit-backdrop-filter: blur(1px);
@@ -68,19 +76,22 @@ header {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgb(0,0,0,0.6);
 }
-.profile img {
+.profile img 
+{
   width: 160px;
   height: 160px;
   object-fit: cover;
   border-radius: 12px;
 }
-.bio p {
+.bio p 
+{
   margin: 0 0 8px 0;
   color: var(--text);
 }
 
 /* 3Dアバターの独立セクション（About内のcanvas） */
-.avatar-wrap {
+.avatar-wrap 
+{
   max-width: 900px;
   margin: 0 auto 24px auto;
   padding: 16px;
@@ -88,7 +99,8 @@ header {
   justify-content: center;
   align-items: center;
 }
-#avatar-canvas {
+#avatar-canvas 
+{
   width: 325px;   /* お好みで */
   height: 325px;  /* お好みで */
   display: block;
@@ -102,16 +114,19 @@ header {
 /* ===============================
    Works
    =============================== */
-#works {
+#works 
+{
   position: relative;
   margin-top: 48px;
 }
-.works-tabs {
+.works-tabs 
+{
   display: flex;
   gap: 4px;
   margin-bottom: 8px;
 }
-.works-tabs button {
+.works-tabs button 
+{
   background: rgba(255, 255, 255, 0.8);
   color: rgba(51, 51, 51, 0.8);
   border: none;
@@ -122,11 +137,13 @@ header {
   -webkit-backdrop-filter: blur(1px);
   border-radius: 8px
 }
-.works-tabs button.active {
+.works-tabs button.active 
+{
   background: rgba(51, 51, 51, 0.8);
   color: rgba(255, 255, 255, 0.8);
 }
-.works-view {
+.works-view 
+{
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -137,7 +154,8 @@ header {
   backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
   -webkit-backdrop-filter: blur(1px);
 }
-.arrow {
+.arrow 
+{
   width: 0;
   height: 0;
   border-top: 20px solid transparent;
@@ -149,13 +167,16 @@ header {
   padding: 0;
   margin-top: calc(16px + 150px - 20px); /*画像エリア中央に矢印固定*/
 }
-.arrow-left {
+.arrow-left 
+{
   border-right: 20px solid var(--text);
 }
-.arrow-right {
+.arrow-right 
+{
   border-left: 20px solid var(--text);
 }
-.works-content {
+.works-content 
+{
   background: var(--card);
   color: #fff;
   padding: 16px;
@@ -168,7 +189,8 @@ header {
   width: 100%;
   gap: 8px;
 }
-.works-image {
+.works-image 
+{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -176,7 +198,8 @@ header {
   height: 300px;
   overflow: hidden;
 }
-.works-image img {
+.works-image img 
+{
   max-width: 100%;
   max-height: 100%;
   height: auto;
@@ -184,27 +207,31 @@ header {
   object-fit: contain;
   display: block;
 }
-.works-desc {
+.works-desc 
+{
   margin-top: 0;
 }
 
 /* ===============================
    Footer
    =============================== */
-footer {
+footer 
+{
   text-align: center;
   color: var(--muted);
   padding: 36px 8px;
 }
 
 /* ==== CRT風オーバーレイ（3Dキャンバスだけ） ==== */
-.avatar-crt {
+.avatar-crt 
+{
   position: relative;
   display: inline-block; /* キャンバスサイズにフィット */
 }
 
 /* 走査線 + ビネット */
-.avatar-crt::after {
+.avatar-crt::after 
+{
   content: "";
   position: absolute;
   inset: 0;
@@ -227,7 +254,8 @@ footer {
 }
 
 /* ===== Boot Overlay (起動時ロゴ) ===== */
-#boot-overlay{
+#boot-overlay
+{
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -244,12 +272,14 @@ footer {
 }
 
 /* フェードアウトは opacity だけ下げる */
-#boot-overlay.hide{
+#boot-overlay.hide
+{
   opacity: 0;
   pointer-events: none; /* 任意: 消え際の誤クリック防止 */
 }
 
-#boot-overlay .boot-frame {
+#boot-overlay .boot-frame 
+{
   position: relative;
   width: min(90vw, 720px);
   height: min(55vh, 420px);
@@ -262,7 +292,8 @@ footer {
   animation: boot-jitter 2.6s ease-in-out 0.4s 1;  /* 微振動 */
 }
 
-#boot-overlay .boot-logo {
+#boot-overlay .boot-logo 
+{
   position: relative;
   display: grid;
   place-items: center;
@@ -271,7 +302,8 @@ footer {
   animation: boot-appear 1.2s ease forwards;       /* ロゴのフェードイン */
 }
 
-#boot-overlay .boot-mark {
+#boot-overlay .boot-mark 
+{
   width: 160px;
   height: 160px;
   object-fit: contain;
@@ -279,7 +311,8 @@ footer {
   filter: drop-shadow(0 6px 24px rgba(0,0,0,.6));
 }
 
-#boot-overlay .boot-text {
+#boot-overlay .boot-text 
+{
   font-family: 'PixelMplus10', ui-monospace, monospace;
   font-size: clamp(20px, 4vw, 28px);
   letter-spacing: .08em;
@@ -288,7 +321,8 @@ footer {
 }
 
 /* 走査線(上に乗る疑似レイヤ) */
-#boot-overlay .boot-scanlines {
+#boot-overlay .boot-scanlines 
+{
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -305,7 +339,8 @@ footer {
   opacity: .7;
 }
 
-#boot-overlay .boot-progress{
+#boot-overlay .boot-progress
+{
   position: absolute;
   left: 24px; right: 24px; bottom: 48px;
   height: 6px;
@@ -314,7 +349,8 @@ footer {
   overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
 }
-#boot-overlay .boot-progress__bar{
+#boot-overlay .boot-progress__bar
+{
   width: 0%;
   height: 100%;
   background: linear-gradient(90deg, rgba(255,255,255,.85), rgba(255,255,255,.6));
@@ -323,7 +359,8 @@ footer {
 }
 
 /* Skip ボタン */
-#boot-overlay .boot-skip {
+#boot-overlay .boot-skip 
+{
   position: absolute;
   right: 12px;
   bottom: 12px;
@@ -338,22 +375,37 @@ footer {
   cursor: pointer;
   transition: transform .1s ease, background .2s ease, border-color .2s ease;
 }
-#boot-overlay .boot-skip:hover { transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.45); }
-#boot-overlay .boot-skip:active { transform: translateY(0); }
+#boot-overlay .boot-skip:hover 
+{ transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.45); }
+#boot-overlay .boot-skip:active 
+{ transform: translateY(0); }
 
 /* --- keyframes --- */
-@keyframes boot-appear{
-  0%   { opacity:0; filter: blur(12px) saturate(130%) contrast(130%) hue-rotate(20deg); transform: scale(1.04); }
-  40%  { opacity:1; filter: blur(0)   saturate(110%) contrast(110%); transform: scale(1.00); }
-  60%  { transform: scale(0.999) skewX(0.6deg); }
-  100% { transform: none; }
+@keyframes boot-appear
+{
+  0%   
+{ opacity:0; filter: blur(12px) saturate(130%) contrast(130%) hue-rotate(20deg); transform: scale(1.04); }
+  40%  
+{ opacity:1; filter: blur(0)   saturate(110%) contrast(110%); transform: scale(1.00); }
+  60%  
+{ transform: scale(0.999) skewX(0.6deg); }
+  100% 
+{ transform: none; }
 }
-@keyframes boot-scan{ 0%{background-position-y:-200%} 100%{background-position-y:200%} }
-@keyframes boot-jitter{
-  0%,100%{transform: translate(0,0)}
-  10%{transform: translate(-0.6px, 0.3px) rotate(-0.05deg)}
-  20%{transform: translate( 0.4px,-0.5px) rotate( 0.06deg)}
-  40%{transform: translate( 0.6px, 0.4px) rotate( 0.08deg)}
-  60%{transform: translate( 0.2px,-0.4px) rotate( 0.05deg)}
-  80%{transform: translate( 0.5px,-0.2px) rotate( 0.06deg)}
+@keyframes boot-scan
+{ 0%{background-position-y:-200%} 100%{background-position-y:200%} }
+@keyframes boot-jitter
+{
+  0%,100%
+{transform: translate(0,0)}
+  10%
+{transform: translate(-0.6px, 0.3px) rotate(-0.05deg)}
+  20%
+{transform: translate( 0.4px,-0.5px) rotate( 0.06deg)}
+  40%
+{transform: translate( 0.6px, 0.4px) rotate( 0.08deg)}
+  60%
+{transform: translate( 0.2px,-0.4px) rotate( 0.05deg)}
+  80%
+{transform: translate( 0.5px,-0.2px) rotate( 0.06deg)}
 }
