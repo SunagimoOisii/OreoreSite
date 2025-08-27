@@ -104,10 +104,11 @@ header {
    =============================== */
 #works {
   position: relative;
+  margin-top: 48px;
 }
 .works-tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 8px;
 }
 .works-tabs button {
