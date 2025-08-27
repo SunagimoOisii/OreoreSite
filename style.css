@@ -149,6 +149,14 @@ body.hide-all main > *:not(h1)
   display: none !important;
 }
 
+/* 家の絵文字 */
+.house
+{
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+}
+
 /* ===============================
    Layout
    =============================== */

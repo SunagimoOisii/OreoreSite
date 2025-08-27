@@ -119,3 +119,27 @@ registerTrick(7, () => {
     document.body.classList.remove('hide-all');
   }, 5000);
 });
+
+// 9 文字目 H の仕掛け登録: 家の絵文字を順番に表示
+registerTrick(9, () => {
+  const emojis = ['\u{1F3E0}', '\u{1F3D8}', '\u{1F3E1}'];
+  const count = 100;
+  const interval = 25; // 1つ出すごとの間隔（ms）
+
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const house = document.createElement('span');
+      house.className = 'house';
+      house.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      house.style.left = `${Math.random() * 100}vw`;
+      house.style.top = `${Math.random() * 100}vh`;
+      house.style.fontSize = `${1 + Math.random() * 2}rem`;
+      document.body.appendChild(house);
+
+      // 3秒後に削除
+      setTimeout(() => {
+        house.remove();
+      }, 3000);
+    }, i * interval);
+  }
+});
