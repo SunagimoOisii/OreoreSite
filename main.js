@@ -10,7 +10,7 @@ import { createPostPipeline } from "./lib/postprocess.js";
 import { createRenderer,
   fitToCanvas } from "./lib/renderer.js";
 import { createSceneGraph } from "./lib/scene.js";
-import { applyPS1Jitter } from "./lib/utils.js";
+import { applyPS1Jitter, runFixedStepLoop } from "./lib/utils.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
@@ -127,36 +127,37 @@ function resize()
 window.addEventListener("resize", resize);
 resize();
 
-// ループ（PS1_MODEに合わせて分岐）
+// ループ（PS1_MODE に合わせて分岐）
 const ROT_SPEED = 0.007 * 60;
 if (CONFIG.PS1_MODE)
 {
   const STEP = 1000 / CONFIG.FIXED_FPS;
-  let acc = 0, prev = performance.now();
-  function loop(t)
-  {
-    requestAnimationFrame(loop);
-    acc += t - prev;
-    prev = t;
-    while (acc >= STEP)
+  runFixedStepLoop(
+    STEP,
+    (dt) =>
     {
-      cube.rotation.y += ROT_SPEED * (STEP / 1000);
+      cube.rotation.y += ROT_SPEED * dt;
       applyPS1Jitter(THREE, camera, cube, CONFIG);
-      acc -= STEP;
+    },
+    () =>
+    {
+      post.render(scene, camera);
+      controls.update();
     }
-    post.render(scene, camera);
-    controls.update();
-  }
-  requestAnimationFrame(loop);
+  );
 }
 else
 {
-  function animate()
-  {
-    requestAnimationFrame(animate);
-    cube.rotation.y += 0.007;
-    renderer.render(scene, camera); // 直接描画
-    controls.update();
-  }
-  animate();
+  runFixedStepLoop(
+    0,
+    (dt) =>
+    {
+      cube.rotation.y += 0.007 * 60 * dt;
+    },
+    () =>
+    {
+      renderer.render(scene, camera); // 直接描画
+      controls.update();
+    }
+  );
 }

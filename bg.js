@@ -5,6 +5,7 @@
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { createRenderer, fitToCanvas } from "./lib/renderer.js";
+import { runFixedStepLoop } from "./lib/utils.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)
@@ -200,19 +201,14 @@ function syncInstances()
   BALLS.instanceMatrix.needsUpdate = true;
 }
 
-// -------- ループ（固定ステップ 30fps / 軽量） --------
-let raf = 0, last = performance.now(), acc = 0;
+// -------- ループ（固定ステップ 20fps / 軽量） --------
 const STEP = 1000 / 20; // 20fps
 const SPEED = 0.1; // 速度スケール（好みで）
-function loop(now)
-{
-  raf = requestAnimationFrame(loop);
-  acc += (now - last);
-  last = now;
-
-  while (acc >= STEP)
+runFixedStepLoop(
+  STEP,
+  (dt) =>
   {
-    const dt = (STEP / 1000) * SPEED;
+    const dtScaled = dt * SPEED;
 
     // 立方体の回転
     box.rotation.x += 0.0008;
@@ -222,22 +218,21 @@ function loop(now)
     for (let i = 0; i < COUNT; i++)
     {
       const i3 = i * 3;
-      pos[i3] += vel[i3] * dt;
-      pos[i3 + 1] += vel[i3 + 1] * dt;
-      pos[i3 + 2] += vel[i3 + 2] * dt;
+      pos[i3] += vel[i3] * dtScaled;
+      pos[i3 + 1] += vel[i3 + 1] * dtScaled;
+      pos[i3 + 2] += vel[i3 + 2] * dtScaled;
       reflectWalls(i3);
     }
 
     // 球-球衝突
-    collidePairs(dt);
-
-    acc -= STEP;
+    collidePairs(dtScaled);
+  },
+  () =>
+  {
+    syncInstances();
+    renderer.render(scene, camera);
   }
-
-  syncInstances();
-  renderer.render(scene, camera);
-}
-raf = requestAnimationFrame(loop);
+);
 
 // リサイズ
 function fit()
@@ -249,17 +244,3 @@ function fit()
 }
 window.addEventListener("resize", fit);
 fit();
-
-// タブ非表示で停止（省電力）
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden")
-  {
-    cancelAnimationFrame(raf);
-  }
-  else
-  {
-    last = performance.now();
-    acc = 0;
-    raf = requestAnimationFrame(loop);
-  }
-});
