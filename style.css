@@ -24,6 +24,36 @@ body
   color: var(--text);
 }
 
+#mobile-warning
+{
+  display: none;
+}
+
+@media (max-width: 1024px)
+{
+  body
+  {
+    background: #000;
+    color: #fff;
+  }
+
+  #mobile-warning
+  {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  body > :not(#mobile-warning)
+  {
+    display: none;
+  }
+}
+
 #bg-canvas 
 {
   position: fixed;
