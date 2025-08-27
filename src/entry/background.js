@@ -45,12 +45,12 @@ const physicsCfg = {
   speed: 0.1, // 速度スケール
 };
 
-// -------- 立方体ワイヤーフレーム（枠） --------
+// -------- 枠（初期は立方体） --------
 const boxGeo = new THREE.BoxGeometry(physicsCfg.bounds, physicsCfg.bounds, physicsCfg.bounds);
 const edges = new THREE.EdgesGeometry(boxGeo);
 const lineMat = new THREE.LineBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.7 });
-const box = new THREE.LineSegments(edges, lineMat);
-scene.add(box);
+let boundsObj = new THREE.LineSegments(edges, lineMat);
+scene.add(boundsObj);
  
 // -------- 球（InstancedMesh で高速＆省メモリ） --------
 const GEO = new THREE.SphereGeometry(physicsCfg.radius, 16, 12); // 低ポリ
@@ -60,13 +60,13 @@ const MAT = new THREE.MeshStandardMaterial({
   metalness: 0.1,
   roughness: 0.6,
 });
-const BALLS = new THREE.InstancedMesh(GEO, MAT, physicsCfg.maxCount);
+let BALLS = new THREE.InstancedMesh(GEO, MAT, physicsCfg.maxCount);
 BALLS.count = physicsCfg.count;
 BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 scene.add(BALLS);
 
 // -------- 物理 --------
-const physics = new BgPhysics(THREE, BALLS, physicsCfg);
+let physics = new BgPhysics(THREE, BALLS, physicsCfg);
 
 // -------- ループ（固定ステップ 20fps / 軽量） --------
 const STEP = 1000 / 20; // 20fps
@@ -74,9 +74,9 @@ runFixedStepLoop(
   STEP,
   (dt) =>
   {
-    // 立方体の回転
-    box.rotation.x += 0.0008;
-    box.rotation.y -= 0.0012;
+    // 枠の回転
+    boundsObj.rotation.x += 0.0008;
+    boundsObj.rotation.y -= 0.0012;
 
     // 物理更新
     physics.step(dt);
@@ -101,5 +101,30 @@ export function increaseBalls()
 export function decreaseBalls()
 {
   physics.removeBall();
+}
+
+/** 枠を球体にし群体を立方体化する */
+export function switchToSphereMode()
+{
+  scene.remove(boundsObj);
+
+  const radius = physicsCfg.bounds / 2;
+  const points = new THREE.Path().absarc(0, 0, radius, 0, Math.PI * 2).getSpacedPoints(64);
+  const geo = new THREE.BufferGeometry().setFromPoints(points);
+  const ring1 = new THREE.LineLoop(geo, lineMat);
+  const ring2 = new THREE.LineLoop(geo, lineMat);
+  ring2.rotation.x = Math.PI / 2;
+  boundsObj = new THREE.Group();
+  boundsObj.add(ring1, ring2);
+  scene.add(boundsObj);
+
+  scene.remove(BALLS);
+  const cubeGeo = new THREE.BoxGeometry(physicsCfg.radius * 2, physicsCfg.radius * 2, physicsCfg.radius * 2);
+  BALLS = new THREE.InstancedMesh(cubeGeo, MAT, physicsCfg.maxCount);
+  BALLS.count = physicsCfg.count;
+  BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  scene.add(BALLS);
+
+  physics = new BgPhysics(THREE, BALLS, { ...physicsCfg, mode: 'sphere' });
 }
 
