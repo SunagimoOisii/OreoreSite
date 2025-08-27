@@ -52,11 +52,19 @@ let currentCategory = 'game';
 let index = 0;
 
 /**
+ * 現在のカテゴリに対応する作品リストを取得する。
+ */
+function getCurrentList()
+{
+  return WORKS[currentCategory] || [];
+}
+
+/**
  * 現在のカテゴリから作品を1件選んで表示する。
  */
 function render()
 {
-  const list = WORKS[currentCategory] || [];
+  const list = getCurrentList();
   if (list.length === 0)
   {
     image.style.display = 'none';
@@ -64,7 +72,6 @@ function render()
     return;
   }
   image.style.display = '';
-  index = (index + list.length) % list.length;
   const item = list[index];
   image.src = item.src;
   image.alt = item.alt || '';
@@ -86,20 +93,22 @@ tabs.forEach((btn) => {
   });
 });
 
-left.addEventListener('click', () => {
-  const list = WORKS[currentCategory] || [];
+/**
+ * 作品のインデックスを変更し再描画する。
+ * @param {number} delta 変更量
+ */
+function changeIndex(delta)
+{
+  const list = getCurrentList();
   if (list.length === 0)
     return;
-  index = (index - 1 + list.length) % list.length;
+  index += delta;
+  index = (index + list.length) % list.length;
   render();
-});
+}
 
-right.addEventListener('click', () => {
-  const list = WORKS[currentCategory] || [];
-  if (list.length === 0)
-    return;
-  index = (index + 1) % list.length;
-  render();
-});
+left.addEventListener('click', () => changeIndex(-1));
+
+right.addEventListener('click', () => changeIndex(1));
 
 render();
