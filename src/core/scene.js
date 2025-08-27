@@ -1,4 +1,4 @@
-// lib/scene.js
+// src/core/scene.js
 // シーングラフの生成：テクスチャ付き立方体を配置
 import { makeAffineMaterial,
   makePerspMaterial } from "./materials.js";

@@ -1,4 +1,4 @@
-// lib/renderer.js
+// src/core/renderer.js
 // レンダラー生成とキャンバスサイズ合わせ処理
 /**
  * WebGLRenderer を初期化。

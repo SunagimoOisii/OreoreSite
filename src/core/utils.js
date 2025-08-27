@@ -1,4 +1,4 @@
-// lib/utils.js
+// src/core/utils.js
 // PS1 風のジッター処理など補助関数群
 /**
  * 値を指定ステップで丸める。

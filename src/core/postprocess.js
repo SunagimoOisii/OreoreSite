@@ -1,4 +1,4 @@
-// lib/postprocess.js
+// src/core/postprocess.js
 // 減色ディザと色収差を行うポストプロセスパイプライン
 /**
  * ポストプロセスパイプラインを生成。
