@@ -1,6 +1,8 @@
 // title-tricks.js
 // h1 見出しの各文字に仕掛けを登録するモジュール
 
+import { increaseBalls, decreaseBalls } from './background.js';
+
 const titleElem = document.querySelector('main h1');
 const text = titleElem.textContent;
 titleElem.textContent = '';
@@ -98,4 +100,14 @@ registerTrick(4, () => {
       el.classList.remove('rotate');
     }, 5000);
   });
+});
+
+// 6 文字目 I の仕掛け登録: 背景の球を増やす
+registerTrick(5, () => {
+  increaseBalls();
+});
+
+// 7 文字目 M の仕掛け登録: 背景の球を減らす
+registerTrick(6, () => {
+  decreaseBalls();
 });

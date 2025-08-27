@@ -39,7 +39,8 @@ scene.add(amb, dir);
 // -------- 設定 --------
 const physicsCfg = {
   bounds: 4.0, // 立方体の一辺
-  count: 24, // 球の数（20〜40くらいが見栄えと負荷のバランス◎）
+  count: 24, // 初期の球の数（20〜40くらいが見栄えと負荷のバランス◎）
+  maxCount: 60, // 最大の球の数
   radius: 0.1, // 半径
   speed: 0.1, // 速度スケール
 };
@@ -59,7 +60,8 @@ const MAT = new THREE.MeshStandardMaterial({
   metalness: 0.1,
   roughness: 0.6,
 });
-const BALLS = new THREE.InstancedMesh(GEO, MAT, physicsCfg.count);
+const BALLS = new THREE.InstancedMesh(GEO, MAT, physicsCfg.maxCount);
+BALLS.count = physicsCfg.count;
 BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 scene.add(BALLS);
 
@@ -88,3 +90,16 @@ runFixedStepLoop(
 
 // リサイズ処理の設定
 setupResize(renderer, canvas, camera, cfg);
+
+/** 背景の球を増やす */
+export function increaseBalls()
+{
+  physics.addBall();
+}
+
+/** 背景の球を減らす */
+export function decreaseBalls()
+{
+  physics.removeBall();
+}
+

@@ -7,7 +7,8 @@ export class BgPhysics {
    * @param {object} THREE three.js モジュール
    * @param {import('three').InstancedMesh} mesh 座標を書き込むインスタンスメッシュ
    * @param {object} cfg 設定
-   * @param {number} cfg.count 球の数
+   * @param {number} cfg.count 初期の球の数
+   * @param {number} [cfg.maxCount] 最大の球の数
    * @param {number} cfg.bounds 立方体の一辺
    * @param {number} cfg.radius 球の半径
    * @param {number} cfg.speed 速度スケール
@@ -16,14 +17,15 @@ export class BgPhysics {
   {
     this.THREE = THREE;
     this.mesh = mesh;
+    this.maxCount = cfg.maxCount ?? cfg.count;
     this.count = cfg.count;
     this.bounds = cfg.bounds;
     this.radius = cfg.radius;
     this.speed = cfg.speed;
     this.half = this.bounds / 2;
 
-    this.pos = new Float32Array(this.count * 3);
-    this.vel = new Float32Array(this.count * 3);
+    this.pos = new Float32Array(this.maxCount * 3);
+    this.vel = new Float32Array(this.maxCount * 3);
     this._dummy = new THREE.Object3D();
 
     this._init();
@@ -32,40 +34,61 @@ export class BgPhysics {
   /** 初期配置と速度をランダムに設定する。 */
   _init()
   {
+    for (let i = 0; i < this.count; i++)
+    {
+      this._placeRandom(i);
+    }
+  }
+
+  /** 指定インデックスに球をランダム配置する。 */
+  _placeRandom(i)
+  {
     const rand = (min, max) => min + Math.random() * (max - min);
     const r = this.radius;
     const half = this.half;
-    for (let i = 0; i < this.count; i++)
+    let placed = false;
+    let px = 0, py = 0, pz = 0;
+    while (!placed)
     {
-      let placed = false;
-      let px = 0, py = 0, pz = 0;
-      while (!placed)
+      px = rand(-half + r, half - r);
+      py = rand(-half + r, half - r);
+      pz = rand(-half + r, half - r);
+      placed = true;
+      for (let j = 0; j < i; j++)
       {
-        px = rand(-half + r, half - r);
-        py = rand(-half + r, half - r);
-        pz = rand(-half + r, half - r);
-        placed = true;
-        for (let j = 0; j < i; j++)
+        const j3 = j * 3;
+        const dx = px - this.pos[j3 + 0];
+        const dy = py - this.pos[j3 + 1];
+        const dz = pz - this.pos[j3 + 2];
+        if (dx * dx + dy * dy + dz * dz < (2 * r) * (2 * r))
         {
-          const j3 = j * 3;
-          const dx = px - this.pos[j3 + 0];
-          const dy = py - this.pos[j3 + 1];
-          const dz = pz - this.pos[j3 + 2];
-          if (dx * dx + dy * dy + dz * dz < (2 * r) * (2 * r))
-          {
-            placed = false;
-            break;
-          }
+          placed = false;
+          break;
         }
       }
-      const i3 = i * 3;
-      this.pos[i3 + 0] = px;
-      this.pos[i3 + 1] = py;
-      this.pos[i3 + 2] = pz;
-      this.vel[i3 + 0] = rand(-1.0, 1.0);
-      this.vel[i3 + 1] = rand(-1.0, 1.0);
-      this.vel[i3 + 2] = rand(-1.0, 1.0);
     }
+    const i3 = i * 3;
+    this.pos[i3 + 0] = px;
+    this.pos[i3 + 1] = py;
+    this.pos[i3 + 2] = pz;
+    this.vel[i3 + 0] = rand(-1.0, 1.0);
+    this.vel[i3 + 1] = rand(-1.0, 1.0);
+    this.vel[i3 + 2] = rand(-1.0, 1.0);
+  }
+
+  /** 球を 1 個追加する。 */
+  addBall()
+  {
+    if (this.count >= this.maxCount) return;
+    this._placeRandom(this.count);
+    this.count++;
+  }
+
+  /** 球を 1 個削除する。 */
+  removeBall()
+  {
+    if (this.count <= 0) return;
+    this.count--;
   }
 
   /** 指定インデックスの球と壁との衝突を処理する。 */
@@ -164,6 +187,7 @@ export class BgPhysics {
       this._dummy.updateMatrix();
       this.mesh.setMatrixAt(i, this._dummy.matrix);
     }
+    this.mesh.count = this.count;
     this.mesh.instanceMatrix.needsUpdate = true;
   }
 }
