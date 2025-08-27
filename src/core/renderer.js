@@ -40,3 +40,29 @@ export function fitToCanvas(renderer, canvas, cfg)
     renderer.domElement.style.imageRendering = "";
   }
 }
+
+/**
+ * リサイズイベントを設定し、レンダラー・カメラ・ポスト処理を調整する。
+ * @param {THREE.WebGLRenderer} renderer 対象レンダラー
+ * @param {HTMLCanvasElement} canvas 対象キャンバス
+ * @param {THREE.Camera} camera 対象カメラ
+ * @param {object} cfg 設定値
+ * @param {{resize:function(THREE.WebGLRenderer):void}} [post] ポスト処理パイプライン
+ */
+export function setupResize(renderer, canvas, camera, cfg, post)
+{
+  function onResize()
+  {
+    fitToCanvas(renderer, canvas, cfg);
+    if (post && typeof post.resize === "function")
+    {
+      post.resize(renderer);
+    }
+    const rect = canvas.getBoundingClientRect();
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+  }
+
+  window.addEventListener("resize", onResize);
+  onResize();
+}
