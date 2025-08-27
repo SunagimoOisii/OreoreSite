@@ -6,7 +6,7 @@ export const WORKS = {
   ja: {
     game: [
       {
-        src: 'img/alien-chan.png',
+        src: 'assets/img/alien-chan.png',
         alt: 'AlienChan',
         desc: [
           '作品1',
@@ -14,7 +14,7 @@ export const WORKS = {
         ]
       },
       {
-        src: 'img/me.jpg',
+        src: 'assets/img/me.jpg',
         alt: 'me',
         desc: [
           '作品2',
@@ -24,7 +24,7 @@ export const WORKS = {
     ],
     tool: [
       {
-        src: 'img/logo.png',
+        src: 'assets/img/logo.png',
         alt: 'ロゴ',
         desc: [
           '作品1',
@@ -34,7 +34,7 @@ export const WORKS = {
     ],
     other: [
       {
-        src: 'img/me.jpg',
+        src: 'assets/img/me.jpg',
         alt: 'me',
         desc: [
           '自画像',
