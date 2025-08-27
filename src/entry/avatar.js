@@ -26,12 +26,25 @@ initBootOverlay();
 setupResize(renderer, canvas, camera, CONFIG, post);
 
 const shapeButtons = document.querySelectorAll(".avatar-shapes button");
+
+let isRotating = true;      // 回転継続フラグ
+let isExploded = false;     // バラバラ状態か
+let explodeGroup = null;    // 破片グループ
+let pieceVelocity = [];     // 破片ごとの速度ベクトル
+
 shapeButtons.forEach(btn =>
 {
   btn.addEventListener("click", () =>
   {
+    restoreAvatar();
     changeAvatarShape(btn.dataset.shape);
   });
+});
+
+canvas.addEventListener("click", () =>
+{
+  if (!isExploded)
+    explodeAvatar();
 });
 
 function changeAvatarShape(type)
@@ -60,8 +73,75 @@ function changeAvatarShape(type)
   avatarMesh.geometry = geo;
 }
 
+function explodeAvatar()
+{
+  isExploded = true;
+  isRotating = false;
+  explodeGroup = new THREE.Group();
+  explodeGroup.position.copy(avatarMesh.position);
+  explodeGroup.rotation.copy(avatarMesh.rotation);
+
+  const pos = avatarMesh.geometry.attributes.position;
+  const pieceGeo = new BoxGeometry(baseSize / 15, baseSize / 15, baseSize / 15);
+  explodeGroup.userData.pieceGeo = pieceGeo;
+  pieceVelocity = [];
+
+  for (let i = 0; i < pos.count; i++)
+  {
+    const v = new THREE.Vector3().fromBufferAttribute(pos, i);
+    const m = new THREE.Mesh(pieceGeo, avatarMesh.material);
+    m.position.copy(v);
+    explodeGroup.add(m);
+
+    const dir = v.clone();
+    if (dir.lengthSq() === 0)
+      dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+    dir.normalize().multiplyScalar(0.5);
+    pieceVelocity.push(dir);
+  }
+
+  scene.add(explodeGroup);
+  avatarMesh.visible = false;
+}
+
+function restoreAvatar()
+{
+  if (!isExploded)
+    return;
+
+  avatarMesh.rotation.set(0, 0, 0);
+  avatarMesh.visible = true;
+  scene.remove(explodeGroup);
+  if (explodeGroup.userData.pieceGeo)
+    explodeGroup.userData.pieceGeo.dispose();
+  explodeGroup = null;
+  pieceVelocity = [];
+  isExploded = false;
+  isRotating = true;
+}
+
 // ループ（PS1_MODE に合わせて分岐）
 const ROT_SPEED = 0.007 * 60;
+
+function updateAvatar(dt)
+{
+  if (isExploded && explodeGroup)
+  {
+    explodeGroup.children.forEach((m, i) =>
+    {
+      m.position.addScaledVector(pieceVelocity[i], dt);
+    });
+  }
+  else
+  {
+    if (isRotating)
+      avatarMesh.rotation.y += ROT_SPEED * dt;
+
+    if (CONFIG.PS1_MODE)
+      applyPS1Jitter(THREE, camera, avatarMesh, CONFIG);
+  }
+}
+
 if (CONFIG.PS1_MODE)
 {
   const STEP = 1000 / CONFIG.FIXED_FPS;
@@ -69,8 +149,7 @@ if (CONFIG.PS1_MODE)
     STEP,
     (dt) =>
     {
-      avatarMesh.rotation.y += ROT_SPEED * dt;
-      applyPS1Jitter(THREE, camera, avatarMesh, CONFIG);
+      updateAvatar(dt);
     },
     () =>
     {
@@ -85,7 +164,7 @@ else
     0,
     (dt) =>
     {
-      avatarMesh.rotation.y += 0.007 * 60 * dt;
+      updateAvatar(dt);
     },
     () =>
     {
