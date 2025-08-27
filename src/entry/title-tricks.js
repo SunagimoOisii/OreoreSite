@@ -144,6 +144,11 @@ registerTrick(9, () => {
   }
 });
 
+// 10 文字目 O の仕掛け登録: 背景の枠を球体に変更
+registerTrick(10, () => {
+  switchToSphereMode();
+});
+
 // 13 文字目 E の仕掛け登録: h1 の文言を一時的に変更
 registerTrick(13, () => {
   const original = [...charElems];

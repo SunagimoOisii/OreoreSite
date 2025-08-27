@@ -13,7 +13,7 @@ export class BgPhysics {
    * @param {number} cfg.radius 球の半径
    * @param {number} cfg.speed 速度スケール
    */
-  constructor(THREE, mesh, cfg)
+ constructor(THREE, mesh, cfg)
   {
     this.THREE = THREE;
     this.mesh = mesh;
@@ -23,6 +23,8 @@ export class BgPhysics {
     this.radius = cfg.radius;
     this.speed = cfg.speed;
     this.half = this.bounds / 2;
+    this.mode = cfg.mode ?? 'cube';
+    this.sphereRadius = this.half;
 
     this.pos = new Float32Array(this.maxCount * 3);
     this.vel = new Float32Array(this.maxCount * 3);
@@ -50,9 +52,14 @@ export class BgPhysics {
     let px = 0, py = 0, pz = 0;
     while (!placed)
     {
-      px = rand(-half + r, half - r);
-      py = rand(-half + r, half - r);
-      pz = rand(-half + r, half - r);
+      const limit = half - r;
+      px = rand(-limit, limit);
+      py = rand(-limit, limit);
+      pz = rand(-limit, limit);
+      if (this.mode === 'sphere')
+      {
+        if (px * px + py * py + pz * pz > limit * limit) continue;
+      }
       placed = true;
       for (let j = 0; j < i; j++)
       {
@@ -94,20 +101,44 @@ export class BgPhysics {
   /** 指定インデックスの球と壁との衝突を処理する。 */
   _reflect(i3)
   {
-    const limit = this.half - this.radius;
-    for (let axis = 0; axis < 3; axis++)
+    if (this.mode === 'cube')
     {
-      const p = this.pos[i3 + axis];
-      const v = this.vel[i3 + axis];
-      if (p > limit)
+      const limit = this.half - this.radius;
+      for (let axis = 0; axis < 3; axis++)
       {
-        this.pos[i3 + axis] = limit;
-        this.vel[i3 + axis] = -Math.abs(v);
+        const p = this.pos[i3 + axis];
+        const v = this.vel[i3 + axis];
+        if (p > limit)
+        {
+          this.pos[i3 + axis] = limit;
+          this.vel[i3 + axis] = -Math.abs(v);
+        }
+        else if (p < -limit)
+        {
+          this.pos[i3 + axis] = -limit;
+          this.vel[i3 + axis] = Math.abs(v);
+        }
       }
-      else if (p < -limit)
+    }
+    else
+    {
+      const limit = this.sphereRadius - this.radius;
+      const x = this.pos[i3];
+      const y = this.pos[i3 + 1];
+      const z = this.pos[i3 + 2];
+      const r = Math.sqrt(x * x + y * y + z * z);
+      if (r > limit)
       {
-        this.pos[i3 + axis] = -limit;
-        this.vel[i3 + axis] = Math.abs(v);
+        const nx = x / r;
+        const ny = y / r;
+        const nz = z / r;
+        this.pos[i3] = nx * limit;
+        this.pos[i3 + 1] = ny * limit;
+        this.pos[i3 + 2] = nz * limit;
+        const vn = this.vel[i3] * nx + this.vel[i3 + 1] * ny + this.vel[i3 + 2] * nz;
+        this.vel[i3] -= 2 * vn * nx;
+        this.vel[i3 + 1] -= 2 * vn * ny;
+        this.vel[i3 + 2] -= 2 * vn * nz;
       }
     }
   }
