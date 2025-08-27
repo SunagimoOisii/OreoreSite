@@ -4,6 +4,7 @@
 // - 壁との反射と球同士の弾性衝突を実装
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import { createRenderer, fitToCanvas } from "./lib/renderer.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)
@@ -12,15 +13,11 @@ if (!canvas)
 }
 
 // -------- 基本セットアップ（軽量・レトロ寄せ） --------
-const renderer = new THREE.WebGLRenderer({
-  canvas,
+const cfg = { PS1_MODE: true, INTERNAL_SCALE: 1 };
+const renderer = createRenderer(THREE, canvas, cfg, {
   antialias: false, // 粗さを残す
-  alpha: true, // 透過でページ背景を活かす
   powerPreference: "low-power",
 });
-renderer.setPixelRatio(1); // PS1風に寄せるなら 1 固定が相性良し
-renderer.setSize(window.innerWidth, window.innerHeight, false);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 
 const scene = new THREE.Scene();
@@ -245,12 +242,13 @@ raf = requestAnimationFrame(loop);
 // リサイズ
 function fit()
 {
-  const w = window.innerWidth, h = window.innerHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h;
+  fitToCanvas(renderer, canvas, cfg);
+  const rect = canvas.getBoundingClientRect();
+  camera.aspect = rect.width / rect.height;
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", fit);
+fit();
 
 // タブ非表示で停止（省電力）
 document.addEventListener("visibilitychange", () => {
