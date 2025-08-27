@@ -1,5 +1,5 @@
 // src/core/scene.js
-// シーングラフの生成：テクスチャ付き立方体を配置
+// シーングラフの生成：テクスチャ付きメッシュを配置
 import { makeAffineMaterial,
   makePerspMaterial } from "./materials.js";
 
@@ -7,7 +7,7 @@ import { makeAffineMaterial,
  * シーン・カメラ・メッシュを構築して返す。
  * @param {typeof import('three')} THREE three 名前空間
  * @param {object} cfg 設定値
- * @returns {{scene:THREE.Scene,camera:THREE.PerspectiveCamera,cube:THREE.Mesh}}
+ * @returns {{scene:THREE.Scene,camera:THREE.PerspectiveCamera,avatarMesh:THREE.Mesh,tex:THREE.Texture,baseSize:number}}
  */
 export function createSceneGraph(THREE, cfg)
 {
@@ -15,8 +15,8 @@ export function createSceneGraph(THREE, cfg)
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.set(0, 0, 5);
 
-  const cubeSize = 2.25;
-  const geo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+  const baseSize = 2.25;
+  const geo = new THREE.BoxGeometry(baseSize, baseSize, baseSize);
 
   const tex = new THREE.TextureLoader().load("img/me.jpg", t => {
     t.colorSpace = THREE.SRGBColorSpace;
@@ -29,20 +29,17 @@ export function createSceneGraph(THREE, cfg)
     }
   });
 
-  let matColor, matGray;
+  let matColor;
   if (cfg.PS1_MODE)
   {
     matColor = makeAffineMaterial(THREE, tex, cfg.AFFINE_STRENGTH, false);
-    matGray = makeAffineMaterial(THREE, tex, cfg.AFFINE_STRENGTH, true);
   }
   else
   {
     matColor = makePerspMaterial(THREE, tex, false);
-    matGray = makePerspMaterial(THREE, tex, true);
   }
-  const materials = [ matGray, matGray, matGray, matGray, matColor, matGray ];
-  const cube = new THREE.Mesh(geo, materials);
-  scene.add(cube);
+  const avatarMesh = new THREE.Mesh(geo, matColor);
+  scene.add(avatarMesh);
 
-  return { scene, camera, cube };
+  return { scene, camera, avatarMesh, tex, baseSize };
 }

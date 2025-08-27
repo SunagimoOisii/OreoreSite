@@ -97,7 +97,7 @@ section h2
   justify-content: center;
   align-items: center;
 }
-#avatar-canvas 
+#avatar-canvas
 {
   width: 325px;
   height: 325px;
@@ -106,6 +106,28 @@ section h2
   clip-path: none;
   mask: none;
   background:#ddd
+}
+
+.avatar-shapes
+{
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.avatar-shapes button
+{
+  background: var(--card);
+  color: var(--text);
+  border: none;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.avatar-shapes button:hover
+{
+  background: var(--accent);
+  color: #fff;
 }
 
 /* ===============================
