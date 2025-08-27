@@ -4,7 +4,7 @@
 // - 壁との反射と球同士の弾性衝突を実装
 
 import * as THREE from "three";
-import { createRenderer, fitToCanvas } from "../core/renderer.js";
+import { createRenderer, setupResize } from "../core/renderer.js";
 import { runFixedStepLoop } from "../core/utils.js";
 import { BgPhysics } from "../core/bg-physics.js";
 
@@ -86,13 +86,5 @@ runFixedStepLoop(
   }
 );
 
-// リサイズ
-function fit()
-{
-  fitToCanvas(renderer, canvas, cfg);
-  const rect = canvas.getBoundingClientRect();
-  camera.aspect = rect.width / rect.height;
-  camera.updateProjectionMatrix();
-}
-window.addEventListener("resize", fit);
-fit();
+// リサイズ処理の設定
+setupResize(renderer, canvas, camera, cfg);
