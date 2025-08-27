@@ -4,8 +4,6 @@
 // - ブートオーバーレイとリサイズ処理を管理
 import * as THREE from "three";
 const { BoxGeometry, TetrahedronGeometry, SphereGeometry, TorusGeometry } = THREE;
-import { ExplodeModifier } from "three/addons/modifiers/ExplodeModifier.js";
-import gsap from "https://cdn.skypack.dev/gsap@3.12.2";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
@@ -21,10 +19,6 @@ const { scene, camera, avatarMesh, tex, baseSize } = createSceneGraph(THREE, CON
 const controls = createControls(THREE, camera, renderer.domElement, CONFIG);
 const post = createPostPipeline(THREE, renderer, CONFIG); // { render(scene,camera), resize() }
 
-let isExploded = false;
-let isRotating = false;
-let explodedMeshes = [];
-
 // ブートオーバーレイ初期化
 initBootOverlay();
 
@@ -36,79 +30,8 @@ shapeButtons.forEach(btn =>
 {
   btn.addEventListener("click", () =>
   {
-    if (isExploded)
-    {
-      explodedMeshes.forEach(m =>
-      {
-        m.geometry.dispose();
-        scene.remove(m);
-      });
-      explodedMeshes = [];
-      isExploded = false;
-      isRotating = true;
-      avatarMesh.visible = true;
-      avatarMesh.rotation.set(0, 0, 0);
-    }
     changeAvatarShape(btn.dataset.shape);
   });
-});
-
-canvas.addEventListener("click", () =>
-{
-  isRotating = !isRotating;
-  if (isExploded)
-  {
-    return;
-  }
-
-  const modifier = new ExplodeModifier();
-  const geo = avatarMesh.geometry.clone();
-  modifier.modify(geo);
-  const pos = geo.getAttribute("position");
-  const uv = geo.getAttribute("uv");
-  const norm = geo.getAttribute("normal");
-
-  avatarMesh.visible = false;
-  for (let i = 0; i < pos.count; i += 3)
-  {
-    const g = new THREE.BufferGeometry();
-    const verts = new Float32Array(9);
-    const uvs = new Float32Array(6);
-    for (let j = 0; j < 3; j++)
-    {
-      verts[j * 3] = pos.getX(i + j);
-      verts[j * 3 + 1] = pos.getY(i + j);
-      verts[j * 3 + 2] = pos.getZ(i + j);
-      if (uv)
-      {
-        uvs[j * 2] = uv.getX(i + j);
-        uvs[j * 2 + 1] = uv.getY(i + j);
-      }
-    }
-    g.setAttribute("position", new THREE.BufferAttribute(verts, 3));
-    if (uv)
-    {
-      g.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-    }
-    const mesh = new THREE.Mesh(g, avatarMesh.material);
-    explodedMeshes.push(mesh);
-    scene.add(mesh);
-
-    const dir = new THREE.Vector3(
-      norm.getX(i) + norm.getX(i + 1) + norm.getX(i + 2),
-      norm.getY(i) + norm.getY(i + 1) + norm.getY(i + 2),
-      norm.getZ(i) + norm.getZ(i + 1) + norm.getZ(i + 2)
-    ).normalize().multiplyScalar(1.5);
-
-    gsap.to(mesh.position, {
-      x: dir.x,
-      y: dir.y,
-      z: dir.z,
-      duration: 1,
-      ease: "power2.out"
-    });
-  }
-  isExploded = true;
 });
 
 function changeAvatarShape(type)
@@ -146,10 +69,7 @@ if (CONFIG.PS1_MODE)
     STEP,
     (dt) =>
     {
-      if (isRotating)
-      {
-        avatarMesh.rotation.y += ROT_SPEED * dt;
-      }
+      avatarMesh.rotation.y += ROT_SPEED * dt;
       applyPS1Jitter(THREE, camera, avatarMesh, CONFIG);
     },
     () =>
@@ -165,10 +85,7 @@ else
     0,
     (dt) =>
     {
-      if (isRotating)
-      {
-        avatarMesh.rotation.y += ROT_SPEED * dt;
-      }
+      avatarMesh.rotation.y += 0.007 * 60 * dt;
     },
     () =>
     {
