@@ -74,14 +74,19 @@ section h2
   border-radius: var(--radius);
   box-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
-.profile img 
+.profile img
 {
   width: 160px;
   height: 160px;
   object-fit: cover;
   border-radius: var(--radius);
 }
-.bio p 
+.bio
+{
+  position: relative;
+  padding-top: 40px;
+}
+.bio p
 {
   margin: 0 0 8px;
   color: var(--text);
@@ -110,14 +115,17 @@ section h2
 
 .avatar-shapes
 {
+  position: absolute;
+  top: 0;
+  right: 20;
   display: flex;
   gap: 4px;
   margin-top: 8px;
 }
 .avatar-shapes button
 {
-  background: var(--card);
-  color: var(--text);
+  background: rgba(255, 255, 255, 1);
+  color: rgba(51, 51, 51, 1);
   border: none;
   padding: 4px 8px;
   border-radius: var(--radius);
@@ -146,7 +154,7 @@ section h2
 .works-tabs button 
 {
   background: rgba(255, 255, 255, 0.8);
-  color: rgba(51, 51, 51, 0.8);
+  color: rgba(51, 51, 51, 1);
   border: none;
   padding: 8px 16px;
   cursor: pointer;
@@ -158,7 +166,12 @@ section h2
 .works-tabs button.active 
 {
   background: rgba(51, 51, 51, 0.8);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 1);
+}
+.works-tabs button:hover
+{
+  background: var(--accent);
+  color: #fff;
 }
 .works-view 
 {
