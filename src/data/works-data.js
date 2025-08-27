@@ -1,4 +1,4 @@
-// src/data/works-data.js
+// src/data/works.js
 // WORKS データを定義
 // 現状は日本語のみだが、将来的に多言語や JSON 取得へ拡張できる構造
 

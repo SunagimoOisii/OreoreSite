@@ -6,7 +6,7 @@
 import * as THREE from "three";
 import { createRenderer, setupResize } from "../core/renderer.js";
 import { runFixedStepLoop } from "../core/utils.js";
-import { BgPhysics } from "../core/bg-physics.js";
+import { BackgroundPhysics } from "../core/background-physics.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)
@@ -66,7 +66,7 @@ BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 scene.add(BALLS);
 
 // -------- 物理 --------
-let physics = new BgPhysics(THREE, BALLS, physicsCfg);
+let physics = new BackgroundPhysics(THREE, BALLS, physicsCfg);
 
 // -------- ループ（固定ステップ 20fps / 軽量） --------
 const STEP = 1000 / 20; // 20fps
@@ -125,6 +125,6 @@ export function switchToSphereMode()
   BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   scene.add(BALLS);
 
-  physics = new BgPhysics(THREE, BALLS, { ...physicsCfg, mode: 'sphere' });
+  physics = new BackgroundPhysics(THREE, BALLS, { ...physicsCfg, mode: 'sphere' });
 }
 
