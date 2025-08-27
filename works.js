@@ -1,46 +1,7 @@
 // works.js
 // 制作物ギャラリーのタブ切替と表示処理
-// - WORKS 定義に従い画像と説明を更新
-const WORKS = {
-  game: [
-    {
-      src: 'img/AlienChan.png',
-      alt: 'AlienChan',
-      desc: [
-        '作品1',
-        '説明はまだないんだワ',
-      ]
-    },
-    {
-      src: 'img/me.jpg',
-      alt: 'me',
-      desc: [
-        '作品2',
-        '説明はまだないんだワ'
-      ]
-    }
-  ],
-  tool: [
-    {
-      src: 'img/logo.png',
-      alt: 'ロゴ',
-      desc: [
-        '作品1',
-        '説明はまだないんだワ'
-      ]
-    }
-  ],
-  other: [
-    {
-      src: 'img/AlienChan.png',
-      alt: 'AlienChan',
-      desc: [
-        '作品1',
-        '説明はまだないんだワ'
-      ]
-    }
-  ]
-};
+// WORKS データを別モジュールから読み込む
+import { WORKS } from './lib/data/works.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const image = document.querySelector('.works-image img');
@@ -48,6 +9,8 @@ const descList = document.querySelector('.works-desc');
 const left = document.querySelector('.arrow-left');
 const right = document.querySelector('.arrow-right');
 
+// 現在の言語とカテゴリを保持
+let currentLang = 'ja';
 let currentCategory = 'game';
 let index = 0;
 
@@ -56,7 +19,8 @@ let index = 0;
  */
 function getCurrentList()
 {
-  return WORKS[currentCategory] || [];
+  const langData = WORKS[currentLang] || {};
+  return langData[currentCategory] || [];
 }
 
 /**
