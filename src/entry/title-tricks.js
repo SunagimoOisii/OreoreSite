@@ -70,3 +70,8 @@ registerTrick(1, () => {
     });
   }
 });
+
+// 3 文字目 N の仕掛け登録: タブタイトルを変更
+registerTrick(2, () => {
+  document.title = '君ってデバッガー？';
+});
