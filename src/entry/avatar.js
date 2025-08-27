@@ -2,7 +2,7 @@
 // three.js アバター表示のエントリーポイント
 // - レンダラー・シーングラフ・操作系・ポスト処理を初期化
 // - ブートオーバーレイとリサイズ処理を管理
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import * as THREE from "three";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
