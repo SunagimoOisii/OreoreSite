@@ -34,11 +34,12 @@ export const WORKS = {
     ],
     other: [
       {
-        src: 'img/alien-chan.png',
-        alt: 'AlienChan',
+        src: 'img/me.jpg',
+        alt: 'me',
         desc: [
-          '作品1',
-          '説明はまだないんだワ'
+          '自画像',
+          'スマホを使って5分程度で作成',
+          '5分の割には良い出来だ…'
         ]
       }
     ]

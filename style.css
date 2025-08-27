@@ -36,22 +36,16 @@ body
 
 /* 見出しなど */
 h1 
-{ color: var(--accent); }
+{ 
+  color: var(--accent);
+  font-size: 400%;
+  margin-bottom: 0;
+}
 section h2 
 {
   font-size: 200%;
   margin-top: 48px;
   margin-bottom: 8px;
-}
-
-/* ===============================
-   Header / Nav
-   =============================== */
-header 
-{
-  text-align: center;
-  font-size: 200%;
-  padding: 48px 16px 24px;
 }
 
 /* ===============================
@@ -151,7 +145,6 @@ header
   justify-content: center;
   gap: 8px;
   width: 100%;
-  max-width: 600px;
   margin: 0 auto;
   backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
   -webkit-backdrop-filter: blur(1px);
@@ -186,8 +179,7 @@ header
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.6);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  max-width: 600px;
+  align-items: flex-start;
   width: 100%;
   gap: 8px;
 }
