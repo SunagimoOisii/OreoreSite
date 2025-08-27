@@ -1,17 +1,17 @@
-// main.js
+// avatar.js
 // three.js アバター表示のエントリーポイント
 // - レンダラー・シーングラフ・操作系・ポスト処理を初期化
 // - ブートオーバーレイとリサイズ処理を管理
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
-import { CONFIG } from "./lib/config.js";
-import { createControls } from "./lib/controls.js";
-import { createPostPipeline } from "./lib/postprocess.js";
+import { CONFIG } from "../../lib/config.js";
+import { createControls } from "../../lib/controls.js";
+import { createPostPipeline } from "../../lib/postprocess.js";
 import { createRenderer,
-  fitToCanvas } from "./lib/renderer.js";
-import { createSceneGraph } from "./lib/scene.js";
-import { applyPS1Jitter, runFixedStepLoop } from "./lib/utils.js";
-import { initBootOverlay } from "./lib/bootOverlay.js";
+  fitToCanvas } from "../../lib/renderer.js";
+import { createSceneGraph } from "../../lib/scene.js";
+import { applyPS1Jitter, runFixedStepLoop } from "../../lib/utils.js";
+import { initBootOverlay } from "../../lib/bootOverlay.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
