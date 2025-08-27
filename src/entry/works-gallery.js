@@ -1,7 +1,7 @@
 // works-gallery.js
 // 制作物ギャラリーのタブ切替と表示処理
 // WORKS データを別モジュールから読み込む
-import { WORKS } from '../data/works-data.js';
+import { WORKS } from '../data/works.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const image = document.querySelector('.works-image img');
