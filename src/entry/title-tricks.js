@@ -143,3 +143,15 @@ registerTrick(9, () => {
     }, i * interval);
   }
 });
+
+// 13 文字目 E の仕掛け登録: h1 の文言を一時的に変更
+registerTrick(13, () => {
+  const original = [...charElems];
+  titleElem.textContent = 'もうネタがない';
+  setTimeout(() => {
+    titleElem.textContent = '';
+    original.forEach((el) => {
+      titleElem.appendChild(el);
+    });
+  }, 5000);
+});
