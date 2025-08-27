@@ -6,7 +6,7 @@ export const WORKS = {
   ja: {
     game: [
       {
-        src: 'img/AlienChan.png',
+        src: 'img/alien-chan.png',
         alt: 'AlienChan',
         desc: [
           '作品1',
@@ -34,7 +34,7 @@ export const WORKS = {
     ],
     other: [
       {
-        src: 'img/AlienChan.png',
+        src: 'img/alien-chan.png',
         alt: 'AlienChan',
         desc: [
           '作品1',

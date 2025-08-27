@@ -6,7 +6,7 @@
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 import { createRenderer, fitToCanvas } from "../core/renderer.js";
 import { runFixedStepLoop } from "../core/utils.js";
-import { BgPhysics } from "../core/bgPhysics.js";
+import { BgPhysics } from "../core/bg-physics.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)
