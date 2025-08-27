@@ -1,5 +1,7 @@
-// 背景：立方体内で球が跳ねあう（壁＆球-球の弾性衝突）
-// 既存の #bg-canvas を使用。Boids は撤去してOK。
+// bg.js
+// 背景アニメーション：立方体内で球が跳ね回るシンプルなデモ
+// - 既存の #bg-canvas 要素へ描画
+// - 壁との反射と球同士の弾性衝突を実装
 
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
@@ -92,7 +94,10 @@ for (let i = 0; i < COUNT; i++) {
   vel[i3 + 2] = rand(-1.0, 1.0);
 }
 
-// 壁反射（完全弾性）
+/**
+ * 壁との衝突を処理し、侵入分を押し戻して完全弾性反射させる。
+ * @param {number} i3 pos/vel 配列の開始インデックス
+ */
 function reflectWalls(i3) {
   // 位置更新後に壁で反射。侵入した分は押し戻す。
   for (let axis = 0; axis < 3; axis++) {
@@ -104,7 +109,10 @@ function reflectWalls(i3) {
   }
 }
 
-// 球-球の弾性衝突（同質量の簡易モデル）
+/**
+ * 球同士の弾性衝突を処理する（同質量の近似モデル）。
+ * @param {number} dt 更新ステップ秒
+ */
 function collidePairs(dt) {
   const minDist = 2 * R;
   const minDist2 = minDist * minDist;
@@ -157,6 +165,9 @@ function collidePairs(dt) {
 
 // InstancedMesh へ座標を反映
 const dummy = new THREE.Object3D();
+/**
+ * 計算済みの座標を InstancedMesh へ書き戻す。
+ */
 function syncInstances() {
   for (let i = 0; i < COUNT; i++) {
     const i3 = i * 3;
