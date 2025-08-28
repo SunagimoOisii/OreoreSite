@@ -11,9 +11,14 @@
 /* ===============================
    Footer
    =============================== */
-footer 
+footer
 {
   text-align: center;
   color: var(--muted);
   padding: 36px 8px;
+}
+
+footer a
+{
+  color: inherit;
 }
