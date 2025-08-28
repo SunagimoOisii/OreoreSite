@@ -134,8 +134,10 @@ section h2
 
 @keyframes title-rotate
 {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(3600deg); }
+  from
+  { transform: rotate(0deg); }
+  to
+  { transform: rotate(3600deg); }
 }
 
 /* O クリック時に他要素を一時非表示 */

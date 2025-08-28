@@ -40,15 +40,18 @@ function render()
   image.src = item.src;
   image.alt = item.alt || '';
   descList.innerHTML = '';
-  item.desc.forEach((line) => {
+  item.desc.forEach((line) =>
+  {
     const li = document.createElement('li');
     li.textContent = line;
     descList.appendChild(li);
   });
 }
 
-tabs.forEach((btn) => {
-  btn.addEventListener('click', () => {
+tabs.forEach((btn) =>
+{
+  btn.addEventListener('click', () =>
+  {
     tabs.forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     currentCategory = btn.dataset.category;
@@ -71,8 +74,14 @@ function changeIndex(delta)
   render();
 }
 
-left.addEventListener('click', () => changeIndex(-1));
+left.addEventListener('click', () =>
+{
+  changeIndex(-1);
+});
 
-right.addEventListener('click', () => changeIndex(1));
+right.addEventListener('click', () =>
+{
+  changeIndex(1);
+});
 
 render();

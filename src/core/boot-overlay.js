@@ -17,7 +17,8 @@ export function initBootOverlay({
   progressBarSelector = '.boot-progress__bar',
   minMs = 2400,
   maxMs = 6500
-} = {}) {
+} = {})
+{
   const overlay = document.querySelector(overlaySelector);
   if (!overlay)
     return;
@@ -28,9 +29,11 @@ export function initBootOverlay({
   // 進捗バー制御
   const progress = {
     val: 0,
-    set(x) {
+    set(x)
+    {
       this.val = Math.max(0, Math.min(100, x | 0));
-      if (bar) {
+      if (bar)
+      {
         bar.style.width = this.val + '%';
         bar.parentElement?.setAttribute('aria-valuenow', String(this.val));
       }
@@ -41,13 +44,15 @@ export function initBootOverlay({
   let minElapsed = false, loaded = false, finished = false;
   let maxTimer = null;
 
-  function maybeClose() {
+  function maybeClose()
+  {
     if (!finished && minElapsed && loaded)
       closeOverlay();
   }
 
   // フェードを WAAPI で必ず発動させる
-  function closeOverlay() {
+  function closeOverlay()
+  {
     if (finished)
       return;
     finished = true;
@@ -60,17 +65,24 @@ export function initBootOverlay({
     );
 
     // 正常系: アニメ終了で除去
-    anim.addEventListener('finish', () => overlay.remove());
+    anim.addEventListener('finish', () =>
+    {
+      overlay.remove();
+    });
 
     // 非常系: 何かで止まっても除去
-    setTimeout(() => { if (overlay.isConnected) overlay.remove(); }, 800);
+    setTimeout(() =>
+    {
+      if (overlay.isConnected) overlay.remove();
+    }, 800);
   }
 
   // 体感用の自走プログレス
   const startTs = performance.now();
   const TARGET = 90;
   const DURATION = Math.max(1000, Math.floor(minMs * 0.9));
-  (function tick() {
+  (function tick()
+  {
     if (finished)
       return;
     const t = Math.min(1, (performance.now() - startTs) / DURATION);
@@ -81,10 +93,14 @@ export function initBootOverlay({
   })();
 
   // 最低表示時間経過でゲート開放
-  setTimeout(() => { minElapsed = true; maybeClose(); }, minMs);
+  setTimeout(() =>
+  {
+    minElapsed = true; maybeClose();
+  }, minMs);
 
   // 実ロード完了で100%
-  function markLoaded() {
+  function markLoaded()
+  {
     if (finished)
       return;
     loaded = true;
@@ -97,10 +113,16 @@ export function initBootOverlay({
     window.addEventListener('load', markLoaded, { once: true });
 
   // フォールバック (load が来ない場合)
-  maxTimer = setTimeout(() => { loaded = true; progress.set(100); maybeClose(); }, maxMs);
+  maxTimer = setTimeout(() =>
+  {
+    loaded = true; progress.set(100); maybeClose();
+  }, maxMs);
 
   // スキップで即閉じ
   skipBtn?.addEventListener('click', closeOverlay);
   window.addEventListener('keydown', closeOverlay, { once: true });
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+  overlay.addEventListener('click', (e) =>
+  {
+    if (e.target === overlay) closeOverlay();
+  });
 }

@@ -2,7 +2,8 @@
  * 背景用の球体物理シミュレーション。
  * 球の位置更新と衝突判定を担当する。
  */
-export class BackgroundPhysics {
+export class BackgroundPhysics
+{
   /**
    * @param {object} THREE three.js モジュール
    * @param {import('three').InstancedMesh} mesh 座標を書き込むインスタンスメッシュ

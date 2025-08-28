@@ -6,7 +6,10 @@
  * @param {number} step 丸め単位
  * @returns {number} 丸め後の値
  */
-function snap(v, step) { return Math.round(v / step) * step; }
+function snap(v, step)
+{
+  return Math.round(v / step) * step;
+}
 
 /**
  * カメラとオブジェクトに量子化ジッターを適用し、PS1 風の粗さを再現。
