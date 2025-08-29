@@ -1,60 +1,101 @@
 # SUNAGIMO HOUSE (OreoreSite)
 
-個人サイト用のフロントエンドです。ビルドレス（CDN importmap）で three.js を用い、トップページではアバター表示・背景アニメーション・作品ギャラリーを提供します。
+three.js を使ったフロントエンドのデモ兼ポートフォリオサイトです。開発はビルドレス（Import Maps）で動作し、エイリアスでパスを短縮しています。
 
 ## 特徴
-- ビルドレス構成（`<script type="module">` + importmap）
-- 責務分割（core/effects/features/entry）
-- 作品データは JSON（UI はローダ API だけを利用）
-- CSS は Global と Feature の二層
-- 共通ブート `src/core/app.js` によりエントリ初期化の重複を解消
+- Import Maps でのビルドレス運用（`<script type="module">`）
+- レイヤ分離（core / effects / features / entry）
+- JSON データ（works）を fetch で読込
+- CSS は Global と Feature で分割
+- three 共通ブート `src/core/app.js` で起動・ループ・リサイズ等を提供
+- エントリ命名の統一（`*.entry.js`）とバレル化（`features/*/index.js`, `effects/index.js`）
 
-## 使い方（ローカル）
-- GitHub Pages では `index.html` に直接アクセス
-- ローカル検証は簡易サーバを使用（`file://` では JSON fetch が失敗する場合があります）
+## 動かし方（ローカル）
+- ルートの `index.html` にブラウザアクセス
+- ローカルサーバが必要（`file://` では JSON fetch に失敗する場合あり）
   - Python: `python -m http.server -b 127.0.0.1 8080`
   - Node: `npx serve .`
   - VS Code: Live Server
 
 ## 依存
-- three.js（importmap で CDN 読み込み）
-- three-subdivide（アバター爆発の分割に使用）
+- three.js（Import Maps で CDN から読込）
+- three-subdivide（アバター爆発の細分化処理）
 
-## 構成
+## Import Maps（抜粋）
+`index.html` に以下を定義しています。
+```
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "three-subdivide":"https://cdn.jsdelivr.net/npm/three-subdivide@1.1.5/build/index.module.js",
+    "@core/": "/src/core/",
+    "@features/": "/src/features/",
+    "@effects/": "/src/effects/",
+    "@config/": "/src/config/"
+  }
+}
+```
+
+## ディレクトリ構成（抜粋）
 ```
 index.html                  # ルートページ
 src/
-  core/                     # 基盤（DOMに非依存のロジック）
-    app.js                  # three アプリ共通ブート（新規）
-    config.js               # 設定値
-    controls.js             # OrbitControls ラッパ
-    loop.js                 # 固定ステップ/メインループ
-    renderer.js             # WebGLRenderer 作成/リサイズ
-    scene.js                # Scene/Camera の最小生成
-  effects/                  # 表現（シェーダ/ポストプロセス等）
-  features/                 # 機能（DOMアグリゲート/データ）
-  entry/                    # ページのエントリスクリプト
-  styles/global/            # サイト共通スタイル（トークン/レイアウト）
-img/                        # 画像（将来 public/assets/ に移行予定）
-doc/architecture.md         # 設計ドキュメント
+  config/                   # 設定
+    graphics.js            # グラフィクス系設定
+  core/                     # three 共通（DOMに非依存のロジック）
+    app.js                 # 起動/メインループ等
+    controls.js            # OrbitControls 薄ラッパ
+    loop.js                # 固定ステップ/メインループ
+    renderer.js            # WebGLRenderer 作成/サイズ調整
+    scene.js               # Scene/Camera 雛形
+  effects/                  # マテリアル/ポストプロセス等
+    materials.js
+    postprocess.js
+    psx-jitter.js
+    index.js               # バレル
+  features/                 # 機能（DOM・データも含む）
+    avatar/
+      mesh.js
+      update.js
+      explode.js
+      index.js             # バレル
+    background/
+      controller.js
+      physics.js
+      index.js             # バレル
+    works/
+      loader.js
+      data.json
+      index.js             # バレル
+    boot/overlay.js
+  entry/                    # ページ起点
+    avatar.entry.js
+    background.entry.js
+    works-gallery.entry.js
+    title-tricks.entry.js
+    easter-egg.entry.js
+styles/global/              # サイト全体のスタイル
+img/                        # 画像
+doc/architecture.md         # アーキテクチャ
 ```
 
-設計の依存は以下を維持します。
+## レイヤ間の依存方針
 ```
-features → core（必要に応じて effects）
-effects  → core
-core     → 外部（DOM）へ非依存
+entry     -> features -> core/effects
+effects   -> core
+core      -> 依存なし（外部 three を除く）
 ```
 
 ## 最近の変更
-- 共通ブート `src/core/app.js` を導入し、`src/entry/avatar.js` と `src/entry/background.js` の初期化～ループ重複を解消
-- `license.html` の CSS 参照を `src/styles/global/*` に修正
+- エントリを `*.entry.js` に統一し、`index.html` の読み込み先を更新
+- `src/config/graphics.js` を追加して設定を分離
+- `features/*/index.js`, `effects/index.js` を追加（バレル化）
+- Import Maps に `@core/`, `@features/`, `@effects/`, `@config/` を追加
 
 ## Lint/Editor 設定
-- EditorConfig: `.editorconfig` を追加（改行/インデント/末尾改行などの統一）
-- ESLint(flat): `eslint.config.mjs` を追加（ブラウザ ESM 前提の最小ルール）
-  - 実行例: `npm i -D eslint` → `npx eslint .`
-  - 備考: CDN importmap(three 等)向けに import 解決の厳格化は行っていません。必要に応じて `eslint-plugin-import` を導入してください。
+- EditorConfig: `.editorconfig`（改行/インデント/末尾改行など）
+- ESLint(flat): `eslint.config.mjs`（必要に応じて有効化）
 
 ## ライセンス
-- ライセンス表記は `LICENSE` および `license.html` を参照してください
+- ライセンス表記は `LICENSE` を参照。`license.html` はスタイル調整済みの説明ページです。
