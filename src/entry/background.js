@@ -22,7 +22,7 @@ const INST_MAX = 120;  // 上限
 const seeds = [];      // それぞれの軌道用シード
 const dummy = new THREE.Object3D();
 let elapsed = 0;       // 経過時間（秒）
-const INNER_Y_OFFSET = 0.7; // 内部キューブ群の中心を外殻の中心に合わせる
+const INNER_Y_OFFSET = 1.0; // 内部キューブ群の中心を外殻の中心に合わせる
 
 function disposeObject(obj)
 {
@@ -77,7 +77,7 @@ function makeWirePoly(shape = 'ico')
     obj = new THREE.LineSegments(new THREE.WireframeGeometry(geo), mat);
   }
 
-  obj.position.set(0, 0.8, 0);
+  obj.position.set(0, 1.25, 0);
   polyGroup.add(obj);
   scene.add(polyGroup);
   // 既に内部オブジェクトがあるなら戻す
