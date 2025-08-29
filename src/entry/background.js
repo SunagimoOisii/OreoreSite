@@ -3,12 +3,13 @@
 
 import * as THREE from 'three';
 import { createThreeApp } from '../core/app.js';
+import { CONFIG } from '../core/config.js';
 
 const canvas = document.getElementById('bg-canvas');
 if (!canvas) console.warn('[bg] #bg-canvas not found');
 
 // -------- 設定 --------
-const cfg = { PS1_MODE: true, INTERNAL_SCALE: 1 };
+const cfg = { ...CONFIG, PS1_MODE: true, CA_ENABLED: false };
 
 // ---- 個別FPS（Hz）設定: 0以下で停止、null/undefinedでループ依存（既定=30）
 let POLY_FPS = 20;   // 多面体の回転更新レート
@@ -130,7 +131,7 @@ createThreeApp(THREE, {
   cfg,
   fixedStep: 1000 / 30, // 30fps相当で十分
   useControls: false,
-  usePost: false,
+  usePost: true,
   rendererOpts: { antialias: true, powerPreference: 'low-power', alpha: true },
   createScene: (THREE) =>
   {
@@ -263,3 +264,6 @@ export function setBackgroundFPS({ poly, inner, grid } = {})
   // アキュムレータはリセット（カクつきを避ける）
   accPoly = accGrid = accInner = 0;
 }
+
+
+
