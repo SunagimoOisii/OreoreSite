@@ -1,18 +1,15 @@
 // avatar.js
-// three.js アバター表示のエントリーポイント
-// - レンダラー・シーングラフ・操作系・ポスト処理を初期化
-// - ブートオーバーレイとリサイズ処理を管理
+// three.js アバターのエントリ: シーン土台・メッシュ・爆散・ループをまとめて初期化
 import * as THREE from "three";
-const { BoxGeometry, TetrahedronGeometry, SphereGeometry, TorusGeometry } = THREE;
-import { LoopSubdivision } from "three-subdivide";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
 import { createPostPipeline } from "../effects/postprocess.js";
 import { createRenderer, setupResize } from "../core/renderer.js";
 import { createSceneBase } from "../core/scene.js";
-import { makeAffineMaterial, makePerspMaterial } from "../effects/materials.js";
-import { applyPS1Jitter } from "../effects/psx-jitter.js";
+import { createAvatarMesh, changeAvatarShape } from "../features/avatar/mesh.js";
+import { createAvatarExplosion } from "../features/avatar/explode.js";
+import { createAvatarUpdater } from "../features/avatar/update.js";
 import { runFixedStepLoop } from "../core/loop.js";
 import { initBootOverlay } from "../features/boot/overlay.js";
 
@@ -20,238 +17,61 @@ const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
 const { scene, camera } = createSceneBase(THREE, CONFIG);
 
-// Avatar mesh creation moved from scene to here (injection)
-const baseSize = 2.25;
-const geo0 = new BoxGeometry(baseSize, baseSize, baseSize);
-const tex = new THREE.TextureLoader().load("img/me.jpg", t =>
-{
-  t.colorSpace = THREE.SRGBColorSpace;
-  if (CONFIG.PS1_MODE)
-  {
-    t.generateMipmaps = false;
-    t.minFilter = THREE.NearestFilter;
-    t.magFilter = THREE.NearestFilter;
-    t.anisotropy = 0;
-  }
-});
-let matColor;
-if (CONFIG.PS1_MODE)
-  matColor = makeAffineMaterial(THREE, tex, CONFIG.AFFINE_STRENGTH, false);
-else
-  matColor = makePerspMaterial(THREE, tex, false);
-const avatarMesh = new THREE.Mesh(geo0, matColor);
+// アバターメッシュを生成してシーンに追加
+const { mesh: avatarMesh, baseSize, texture: tex } = createAvatarMesh(THREE, CONFIG);
 scene.add(avatarMesh);
-const controls = createControls(THREE, camera, renderer.domElement, CONFIG);
-const post = createPostPipeline(THREE, renderer, CONFIG); // { render(scene,camera), resize() }
 
-// ブートオーバーレイ初期化
+const controls = createControls(THREE, camera, renderer.domElement, CONFIG);
+const post = createPostPipeline(THREE, renderer, CONFIG);
+
+// ブート演出の初期化
 initBootOverlay();
 
-// リサイズ処理の設定
+// リサイズ連動の設定
 setupResize(renderer, canvas, camera, CONFIG, post);
 
+// 爆散制御と更新処理の用意
+const explosion = createAvatarExplosion(THREE, scene, avatarMesh, baseSize);
+const updater = createAvatarUpdater(THREE, camera, avatarMesh, CONFIG, explosion);
+
+// UI バインド（形状ボタンとクリック爆散）
 const shapeButtons = document.querySelectorAll(".avatar-shapes button");
-
-const TARGET_PIECES = 100;     // 生成する破片の目標数
-
-let isRotating = true;      // 回転継続フラグ
-let isExploded = false;     // バラバラ状態か
-let explodeGroup = null;    // 破片グループ
-let pieceVelocity = [];     // 破片ごとの速度ベクトル
-
 shapeButtons.forEach(btn =>
 {
   btn.addEventListener("click", () =>
   {
-    restoreAvatar();
-    changeAvatarShape(btn.dataset.shape);
+    explosion.restore();
+    updater.setRotating(true);
+    changeAvatarShape(THREE, avatarMesh, baseSize, btn.dataset.shape);
   });
 });
 
 canvas.addEventListener("click", () =>
 {
-  if (!isExploded)
-    explodeAvatar();
+  if (!explosion.isExploded())
+  {
+    explosion.explode();
+    updater.setRotating(false);
+  }
 });
 
-function changeAvatarShape(type)
-{
-  avatarMesh.geometry.dispose();
-
-  let geo;
-  switch (type)
-  {
-    case "cube":
-      geo = new BoxGeometry(baseSize, baseSize, baseSize);
-      break;
-    case "tetra":
-      geo = new TetrahedronGeometry(baseSize * Math.sqrt(3 / 8));
-      break;
-    case "sphere":
-      geo = new SphereGeometry(baseSize / 2, 16, 12);
-      break;
-    case "torus":
-      geo = new TorusGeometry(baseSize * 0.35, baseSize * 0.15, 16, 48);
-      break;
-    default:
-      geo = new BoxGeometry(baseSize, baseSize, baseSize);
-  }
-
-  avatarMesh.geometry = geo;
-}
-
-// ジオメトリから TARGET_PIECES 個の頂点を取得する
-function collectVertices(geometry)
-{
-  // 元ジオメトリを複製し、インデックスを外す
-  let geo = geometry.clone().toNonIndexed();
-  let pos = geo.attributes.position;
-
-  // TARGET_PIECES に達するまで細分化を繰り返す
-  while (pos.count < TARGET_PIECES)
-  {
-    let next;
-
-    if (LoopSubdivision && typeof LoopSubdivision.modify === "function")
-      {
-      // three-subdivide の .modify() 形式
-      next = LoopSubdivision.modify(geo, 1,
-        {
-        //uvSmooth: true/false, split: true/false などオプションを指定可
-      });
-    } else if (typeof LoopSubdivision === "function")
-      {
-      // three-subdivide の関数形式
-      next = LoopSubdivision(geo, 1);
-    } 
-    else
-    {
-      throw new Error("Unsupported LoopSubdivision API");
-    }
-
-    // メモリリーク防止
-    if (next !== geo) geo.dispose();
-
-    geo = next;
-    pos = geo.attributes.position;
-  }
-
-  const vertices = [];
-
-  if (pos.count > TARGET_PIECES) {
-    // ランダムサンプリングで TARGET_PIECES 個の頂点を抽出
-    const indices = [...Array(pos.count).keys()];
-    for (let i = 0; i < TARGET_PIECES; i++) {
-      const idx = Math.floor(Math.random() * indices.length);
-      const vi = indices.splice(idx, 1)[0];
-      vertices.push(new THREE.Vector3().fromBufferAttribute(pos, vi));
-    }
-  } else {
-    for (let i = 0; i < pos.count; i++) {
-      vertices.push(new THREE.Vector3().fromBufferAttribute(pos, i));
-    }
-  }
-
-  geo.dispose();
-  return vertices;
-}
-
-function explodeAvatar()
-{
-  isExploded = true;
-  isRotating = false;
-  explodeGroup = new THREE.Group();
-  explodeGroup.position.copy(avatarMesh.position);
-  explodeGroup.rotation.copy(avatarMesh.rotation);
-
-  const vertices = collectVertices(avatarMesh.geometry);
-  const pieceGeo = new BoxGeometry(baseSize / 15, baseSize / 15, baseSize / 15);
-  explodeGroup.userData.pieceGeo = pieceGeo;
-  pieceVelocity = [];
-
-  vertices.forEach(v =>
-  {
-    const m = new THREE.Mesh(pieceGeo, avatarMesh.material);
-    m.position.copy(v);
-    explodeGroup.add(m);
-
-    const dir = v.clone();
-    if (dir.lengthSq() === 0)
-      dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-    dir.normalize().multiplyScalar(0.5);
-    pieceVelocity.push(dir);
-  });
-
-  scene.add(explodeGroup);
-  avatarMesh.visible = false;
-}
-
-function restoreAvatar()
-{
-  if (!isExploded)
-    return;
-
-  avatarMesh.rotation.set(0, 0, 0);
-  avatarMesh.visible = true;
-  scene.remove(explodeGroup);
-  if (explodeGroup.userData.pieceGeo)
-    explodeGroup.userData.pieceGeo.dispose();
-  explodeGroup = null;
-  pieceVelocity = [];
-  isExploded = false;
-  isRotating = true;
-}
-
-// ループ（PS1_MODE に合わせて分岐）
-const ROT_SPEED = 0.007 * 60;
-
-function updateAvatar(dt)
-{
-  if (isExploded && explodeGroup)
-  {
-    explodeGroup.children.forEach((m, i) =>
-    {
-      m.position.addScaledVector(pieceVelocity[i], dt);
-    });
-  }
-  else
-  {
-    if (isRotating)
-      avatarMesh.rotation.y += ROT_SPEED * dt;
-
-    if (CONFIG.PS1_MODE)
-      applyPS1Jitter(THREE, camera, avatarMesh, CONFIG);
-  }
-}
+// ループ
+const updateAvatar = (dt) => updater.update(dt);
 
 if (CONFIG.PS1_MODE)
 {
   const STEP = 1000 / CONFIG.FIXED_FPS;
   runFixedStepLoop(
     STEP,
-    (dt) =>
-    {
-      updateAvatar(dt);
-    },
-    () =>
-    {
-      post.render(scene, camera);
-      controls.update();
-    }
+    (dt) => updateAvatar(dt),
+    () => { post.render(scene, camera); controls.update(); }
   );
 }
 else
 {
   runFixedStepLoop(
     0,
-    (dt) =>
-    {
-      updateAvatar(dt);
-    },
-    () =>
-    {
-      renderer.render(scene, camera); // 直接描画
-      controls.update();
-    }
+    (dt) => updateAvatar(dt),
+    () => { renderer.render(scene, camera); controls.update(); }
   );
 }
