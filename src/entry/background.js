@@ -5,8 +5,8 @@
 
 import * as THREE from "three";
 import { createRenderer, setupResize } from "../core/renderer.js";
-import { runFixedStepLoop } from "../core/utils.js";
-import { BackgroundPhysics } from "../core/background-physics.js";
+import { runFixedStepLoop } from "../core/loop.js";
+import { BackgroundPhysics } from "../features/background/physics.js";
 
 const canvas = document.getElementById("bg-canvas");
 if (!canvas)

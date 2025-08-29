@@ -8,11 +8,12 @@ import { LoopSubdivision } from "three-subdivide";
 
 import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
-import { createPostPipeline } from "../core/postprocess.js";
+import { createPostPipeline } from "../effects/postprocess.js";
 import { createRenderer, setupResize } from "../core/renderer.js";
 import { createSceneGraph } from "../core/scene.js";
-import { applyPS1Jitter, runFixedStepLoop } from "../core/utils.js";
-import { initBootOverlay } from "../core/boot-overlay.js";
+import { applyPS1Jitter } from "../effects/psx-jitter.js";
+import { runFixedStepLoop } from "../core/loop.js";
+import { initBootOverlay } from "../features/boot/overlay.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);

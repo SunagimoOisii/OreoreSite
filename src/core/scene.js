@@ -1,7 +1,7 @@
 // src/core/scene.js
 // シーングラフの生成：テクスチャ付きメッシュを配置
 import { makeAffineMaterial,
-  makePerspMaterial } from "./materials.js";
+  makePerspMaterial } from "../effects/materials.js";
 
 /**
  * シーン・カメラ・メッシュを構築して返す。

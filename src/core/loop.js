@@ -1,40 +1,9 @@
-// src/core/utils.js
-// PS1 風のジッター処理など補助関数群
-/**
- * 値を指定ステップで丸める。
- * @param {number} v 対象値
- * @param {number} step 丸め単位
- * @returns {number} 丸め後の値
- */
-function snap(v, step)
-{
-  return Math.round(v / step) * step;
-}
+// src/core/loop.js
+// Fixed-step/main loop utilities
 
 /**
- * カメラとオブジェクトに量子化ジッターを適用し、PS1 風の粗さを再現。
- * @param {typeof import('three')} THREE three 名前空間
- * @param {THREE.Camera} camera 対象カメラ
- * @param {THREE.Object3D} obj 対象オブジェクト
- * @param {object} cfg 設定値
- */
-export function applyPS1Jitter(THREE, camera, obj, cfg)
-{
-  if (!cfg.PS1_MODE)
-    return;
-  const posStep = 1 / 256;
-  const rotStep = THREE.MathUtils.degToRad(1.0);
-  camera.position.x = snap(camera.position.x, posStep);
-  camera.position.y = snap(camera.position.y, posStep);
-  camera.position.z = snap(camera.position.z, posStep);
-  obj.rotation.x = snap(obj.rotation.x, rotStep);
-  obj.rotation.y = snap(obj.rotation.y, rotStep);
-  obj.rotation.z = snap(obj.rotation.z, rotStep);
-}
-
-/**
- * 固定ステップのループを開始し、タブの可視状態に応じて停止・再開する。
- * @param {number} stepMs 1 ステップ当たりのミリ秒（0 なら可変）
+ * 固定ステップのループを開始し、タブの可視状態に応じて一時停止・再開する。
+ * @param {number} stepMs 1 ステップあたりのミリ秒(0 なら可変)
  * @param {(dtSec:number) => void} update 更新処理
  * @param {() => void} render 描画処理
  * @returns {{ start: () => void, stop: () => void, dispose: () => void }} 制御関数
@@ -46,7 +15,6 @@ export function runFixedStepLoop(stepMs, update, render)
   let last = 0;
   let listening = false;
 
-  // visibilitychange のリスナーを保持
   const onVisibilityChange = () =>
   {
     if (document.visibilityState === 'hidden')
@@ -118,3 +86,4 @@ export function runFixedStepLoop(stepMs, update, render)
   start();
   return { start, stop, dispose };
 }
+
