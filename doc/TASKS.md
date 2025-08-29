@@ -17,14 +17,15 @@
 
 ## P1（高）
 
-- [ ] Config の分割準備
-  - 新規: `src/config/graphics.js` を作成し、`core/config.js` のグラフィクス系キーを移す
-  - 変更: 参照側（`entry/*`, `features/*`, `core/*`）を段階的に置換
-  - 既存 `core/config.js` は互換エクスポートを暫定提供（破壊的変更を避ける）
+- [x] Config の分割（互換レイヤ廃止）
+  - 新規: `src/config/graphics.js` を作成（グラフィクス系キーを集約）
+  - 変更: 参照側（`src/entry/avatar.js`, `src/entry/background.js`）を `../config/graphics.js` に置換
+  - 削除: `src/core/config.js`（再エクスポートの互換レイヤは不要のため削除）
 
-- [ ] 文字コードの統一（UTF-8）
-  - 対象: `src/**/*.js`, `src/**/*.css`, `*.html`
-  - 手順: エディタ/リント設定見直し、必要に応じて再保存
+- [x] 文字コードの統一（UTF-8）
+  - 対象: `src/core/*`, `src/effects/*`, 一部 `src/features/*`
+  - 対応: コメント/JSDoc の文字化けを修正、`.editorconfig` の `charset = utf-8` を確認
+  - 備考: HTML 文面の一部に文字化けが残るため、必要なら `index.html`/`license.html`/`game.html` の本文も順次手直し可
 
 ## P2（中）
 

@@ -1,11 +1,11 @@
 // src/effects/psx-jitter.js
-// PS1/PSX風のジッター（量子化）表現
+// PS1/PSX 風のジッター（粗い量子化風の揺れ）
 
 /**
- * 任意の値を指定ステップで丸める。
+ * 任意の値を指定ステップで量子化します。
  * @param {number} v 対象値
- * @param {number} step 丸め間隔
- * @returns {number} 丸め後の値
+ * @param {number} step 量子化ステップ
+ * @returns {number} 量子化後の値
  */
 function snap(v, step)
 {
@@ -13,11 +13,11 @@ function snap(v, step)
 }
 
 /**
- * カメラとオブジェクトに量子化ジッターを適用しPS1風の表現に寄せる。
- * @param {typeof import('three')} THREE three 名前空間
+ * カメラとオブジェクトにジッターを適用してPS1風の表現に寄せます。
+ * @param {typeof import('three')} THREE three オブジェクト
  * @param {THREE.Camera} camera カメラ
  * @param {THREE.Object3D} obj 対象オブジェクト
- * @param {object} cfg 設定（PS1_MODE を参照）
+ * @param {object} cfg 設定（PS1_MODE が前提）
  */
 export function applyPS1Jitter(THREE, camera, obj, cfg)
 {
@@ -32,3 +32,4 @@ export function applyPS1Jitter(THREE, camera, obj, cfg)
   obj.rotation.y = snap(obj.rotation.y, rotStep);
   obj.rotation.z = snap(obj.rotation.z, rotStep);
 }
+

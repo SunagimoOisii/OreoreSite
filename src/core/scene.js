@@ -1,10 +1,10 @@
 // src/core/scene.js
-// シーン土台（Scene/Camera のみ）
+// シーン雛形（Scene/Camera のみ）
 
 /**
- * シーンとカメラの土台を生成して返す。
- * @param {typeof import('three')} THREE three 名前空間
- * @param {object} cfg 設定（将来ライト等に反映する余地）
+ * シーンとカメラの雛形を生成して返します。
+ * @param {typeof import('three')} THREE three オブジェクト
+ * @param {object} cfg 設定（必要なら将来拡張）
  * @returns {{scene:THREE.Scene,camera:THREE.PerspectiveCamera}}
  */
 export function createSceneBase(THREE, cfg)

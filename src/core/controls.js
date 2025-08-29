@@ -1,13 +1,17 @@
 // src/core/controls.js
-// OrbitControls を薄くラップし、ズームやパンを禁止する
+// OrbitControls を薄くラップし、用途に合わせた既定を提供します。
+
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 /**
- * マウス操作用の OrbitControls を生成。
- * @param {typeof import('three')} THREE three 名前空間
- * @param {THREE.Camera} camera 操作対象カメラ
- * @param {HTMLElement} dom 入力を受け付けるDOM
- * @param {object} cfg 設定値（未使用だが統一のため渡す）
+ * マウス操作用の OrbitControls を生成します。
+ * - 本プロジェクトの既定ではパン・ズームを無効化し、回転のみ許可します。
+ * - 既定ターゲットは原点 (0,0,0) に設定します。
+ *
+ * @param {typeof import('three')} THREE three オブジェクト
+ * @param {THREE.Camera} camera 対象カメラ
+ * @param {HTMLElement} dom 入力を受け付ける DOM 要素
+ * @param {object} cfg 設定値（将来拡張のため受け取る）
  * @returns {OrbitControls}
  */
 export function createControls(THREE, camera, dom, cfg)
@@ -19,3 +23,4 @@ export function createControls(THREE, camera, dom, cfg)
   controls.target.set(0, 0, 0);
   return controls;
 }
+

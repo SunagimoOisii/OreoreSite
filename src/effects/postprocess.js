@@ -1,18 +1,19 @@
 // src/effects/postprocess.js
-// 減色ディザと色収差を行うポストプロセスパイプライン
+// 量子化ディザと色収差を行うポストプロセス パイプライン
+
 /**
- * ポストプロセスパイプラインを生成。
- * PS1_MODE なら減色ディザと色収差を適用し、無効なら素通し。
- * @param {typeof import('three')} THREE three 名前空間
+ * ポストプロセス パイプラインを生成します。
+ * PS1_MODE なら量子化ディザと色収差を適用し、そうでなければ素の描画。
+ * @param {typeof import('three')} THREE three オブジェクト
  * @param {THREE.WebGLRenderer} renderer ベースレンダラー
- * @param {object} cfg 設定値
+ * @param {object} cfg 設定
  * @returns {{render:(s:THREE.Scene,c:THREE.Camera)=>void, resize:(r:THREE.WebGLRenderer)=>void}}
  */
 export function createPostPipeline(THREE, renderer, cfg)
 {
   if (!cfg.PS1_MODE)
   {
-    // PS1モードでないときはポスト無しでそのまま描画
+    // PS1モードでなければポスト処理なしでそのまま描画
     return {
       render: (scene, camera) => renderer.render(scene, camera),
       resize: () => { }
@@ -33,13 +34,13 @@ export function createPostPipeline(THREE, renderer, cfg)
       tSrc: { value: null },
       uResolution: { value: new THREE.Vector2(2, 2) },
 
-      // 減色ディザ
+      // 量子化ディザ
       uRgbBits: { value: cfg.RGB_BITS },
 
-      // ▼ 色収差パラメータ（CFG連動）
+      // 可変: 色収差パラメータ（CFG 由来）
       uCAEnabled: { value: cfg.CA_ENABLED ? 1.0: 0.0 },
       uCAStr: { value: cfg.CA_STRENGTH }, // 強さ
-      uCAAmpPow: { value: cfg.CA_POWER }, // 半径増幅の指数
+      uCAAmpPow: { value: cfg.CA_POWER }, // 半径変化の指数
       uCenter: { value: new THREE.Vector2(0.5, 0.5) } // 中心
     },
     vertexShader: `
@@ -76,18 +77,18 @@ export function createPostPipeline(THREE, renderer, cfg)
         return float(mat[idx]);
       }
 
-      // 画面中心からの半径に応じてオフセット量を決定（端ほど強く）
+      // 中心からの半径に応じてオフセット量を算出（可変指数）
       vec2 chromaOffset(vec2 uv){
         vec2  toC = uv - uCenter;
         float r   = length(toC);                // 0..~0.7
         float amp = pow(r, uCAAmpPow);          // r^pow
-        // 解像度に依存しないズレ量にするため、最大辺でスケール
+        // 内部解像度に依存しないように、長辺でスケール
         float scale = uCAStr / max(uResolution.x, uResolution.y);
         return normalize(toC + 1e-6) * amp * scale;
       }
 
       void main(){
-        // ===== 1) 色収差：RGBでUVを微妙にズラして取得 =====
+        // 1) 色収差: RGB それぞれの UV をずらして取得
         vec3 baseRGB;
         if(uCAEnabled > 0.5){
           vec2 off = chromaOffset(vUv);
@@ -99,12 +100,12 @@ export function createPostPipeline(THREE, renderer, cfg)
           baseRGB = texture2D(tSrc, vUv).rgb;
         }
 
-        // ===== 2) 減色 + Bayer ディザ =====
+        // 2) 量子化 + Bayer ディザ
         vec2 frag = vUv * uResolution;
         float t = (bayer4x4(frag) + 0.5) / 16.0;
         float levels = exp2(uRgbBits) - 1.0; // 2^bits - 1
         vec3 q = floor(baseRGB * levels + t) / levels;
-        float a = texture2D(tSrc, vUv).a; //αは元のまま
+        float a = texture2D(tSrc, vUv).a; // 透明度はそのまま
         gl_FragColor = vec4(q, a);
       }
     `,
@@ -117,11 +118,11 @@ export function createPostPipeline(THREE, renderer, cfg)
 
   function render(scene, camera)
   {
-    // ①シーンをRTへ
+    // 1) シーンをRTへ
     renderer.setRenderTarget(rt);
     renderer.render(scene, camera);
     renderer.setRenderTarget(null);
-    // ②RTを色収差→減色ディザでフルスクリーン出力
+    // 2) RTを色収差+量子化ディザでフルスクリーンクアッドへ
     mat.uniforms.tSrc.value = rt.texture;
     renderer.render(fsScene, fsCam);
   }
@@ -135,3 +136,4 @@ export function createPostPipeline(THREE, renderer, cfg)
   }
   return { render, resize };
 }
+

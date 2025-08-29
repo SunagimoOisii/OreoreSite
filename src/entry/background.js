@@ -2,7 +2,7 @@
 // 背景描画の起点: features/background/controller に委譲
 
 import * as THREE from 'three';
-import { CONFIG } from '../core/config.js';
+import { GRAPHICS as CONFIG } from '../config/graphics.js';
 import { start as startBackground, setBackgroundFPS } from '../features/background/controller.js';
 
 const canvas = document.getElementById('bg-canvas');
@@ -14,4 +14,3 @@ const cfg = { ...CONFIG, PS1_MODE: true, CA_ENABLED: false };
 setBackgroundFPS({ poly: 20, grid: 24, inner: 15 });
 
 startBackground({ THREE, canvas, cfg, usePost: true });
-

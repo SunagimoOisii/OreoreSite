@@ -8,10 +8,10 @@ import { createControls } from "./controls.js";
 import { createPostPipeline } from "../effects/postprocess.js";
 
 /**
- * three.js アプリの生成と実行を共通化します。
- * - 可変/固定ステップのループ
- * - OrbitControls/ポストプロセスの有無
- * - リサイズ連動
+ * three.js アプリの初期化と実行をまとめます。
+ * - 可変/固定ステップのメインループ
+ * - OrbitControls/ポストプロセスの有効化
+ * - リサイズ対応
  *
  * @param {typeof import('three')} THREE
  * @param {Object} options

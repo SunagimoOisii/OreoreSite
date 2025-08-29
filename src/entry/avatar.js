@@ -2,7 +2,7 @@
 // three.js アバターのエントリ: 共通ブートで初期化～ループを構築
 import * as THREE from "three";
 
-import { CONFIG } from "../core/config.js";
+import { GRAPHICS as CONFIG } from "../config/graphics.js";
 import { createThreeApp } from "../core/app.js";
 import { createAvatarMesh, changeAvatarShape } from "../features/avatar/mesh.js";
 import { createAvatarExplosion } from "../features/avatar/explode.js";

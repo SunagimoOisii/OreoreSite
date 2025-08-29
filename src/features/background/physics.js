@@ -1,19 +1,20 @@
-// background physics implementation (moved from core)
+// src/features/background/physics.js
+// 背景用の簡易物理シミュレーション（反射・衝突のみ）
 
 /**
- * 背景用の球の簡易シミュレーション。
- * 位置更新と衝突判定のみを提供。
+ * 背景用の粒子シミュレーション。
+ * 位置更新と反射・衝突のみを提供します。
  */
 export class BackgroundPhysics
 {
   /**
-   * @param {object} THREE three.js 名前空間
-   * @param {import('three').InstancedMesh} mesh 表示に使うインスタンスドメッシュ
+   * @param {object} THREE three.js オブジェクト
+    * @param {import('three').InstancedMesh} mesh 描画に使うインスタンスドメッシュ
    * @param {object} cfg 設定
-   * @param {number} cfg.count 球の数
-   * @param {number} [cfg.maxCount] 最大数
-   * @param {number} cfg.bounds 領域の幅
-   * @param {number} cfg.radius 球の半径
+   * @param {number} cfg.count 個数
+   * @param {number} [cfg.maxCount] 上限
+   * @param {number} cfg.bounds 箱の幅
+   * @param {number} cfg.radius 粒子半径
    * @param {number} cfg.speed 速度スケール
    */
  constructor(THREE, mesh, cfg)
@@ -36,7 +37,7 @@ export class BackgroundPhysics
     this._init();
   }
 
-  /** 内部バッファと速度をランダムに設定。 */
+  /** バッファと初期値をランダムに設定。 */
   _init()
   {
     for (let i = 0; i < this.count; i++)
@@ -45,7 +46,7 @@ export class BackgroundPhysics
     }
   }
 
-  /** 領域インデックスにランダム配置。 */
+  /** 箱インデックスにランダム配置。 */
   _placeRandom(i)
   {
     const rand = (min, max) => min + Math.random() * (max - min);
@@ -86,7 +87,7 @@ export class BackgroundPhysics
     this.vel[i3 + 2] = rand(-1.0, 1.0);
   }
 
-  /** 球を1つ追加。 */
+  /** 1個追加。 */
   addBall()
   {
     if (this.count >= this.maxCount) return;
@@ -94,14 +95,14 @@ export class BackgroundPhysics
     this.count++;
   }
 
-  /** 球を1つ削除。 */
+  /** 1個削除。 */
   removeBall()
   {
     if (this.count <= 0) return;
     this.count--;
   }
 
-  /** 壁や球同士の反射・衝突。 */
+  /** 壁/境界の反射。 */
   _reflect(i3)
   {
     if (this.mode === 'cube')
@@ -146,7 +147,7 @@ export class BackgroundPhysics
     }
   }
 
-  /** 球同士の衝突。 */
+  /** 粒子間の衝突。 */
   _collide()
   {
     const r2 = (2 * this.radius) * (2 * this.radius);
@@ -195,7 +196,7 @@ export class BackgroundPhysics
     }
   }
 
-  /** 経過 dt で物理シミュレーションを進める。 */
+  /** Δt 秒だけ物理シミュレーションを進める。 */
   step(dt)
   {
     const dtScaled = dt * this.speed;
@@ -210,7 +211,7 @@ export class BackgroundPhysics
     this._collide();
   }
 
-  /** InstancedMesh へ行列を反映。 */
+  /** InstancedMesh へ座標を同期。 */
   sync()
   {
     for (let i = 0; i < this.count; i++)
@@ -226,13 +227,13 @@ export class BackgroundPhysics
   }
 
   /**
-   * モードを切り替える（'cube' | 'sphere'）。必要なら位置をクランプします。
+   * モードを切り替える（'cube' | 'sphere'）。必要なら位置をクランプ/スケール。
    * @param {'cube'|'sphere'} mode
    */
   setMode(mode)
   {
     this.mode = mode === 'sphere' ? 'sphere' : 'cube';
-    // 現在位置を新しい境界へクランプ
+    // 既存位置を適切にクランプ
     for (let i = 0; i < this.count; i++)
     {
       const i3 = i * 3;
@@ -259,7 +260,7 @@ export class BackgroundPhysics
   }
 
   /**
-   * 表示用の InstancedMesh を差し替える（描画側の再生成と同期用）。
+   * 描画用 InstancedMesh を付け替える（頂点配列の再利用と整合用）。
    * @param {import('three').InstancedMesh} mesh
    */
   attachMesh(mesh)
@@ -269,3 +270,4 @@ export class BackgroundPhysics
     this.mesh.instanceMatrix.setUsage(this.THREE.DynamicDrawUsage);
   }
 }
+

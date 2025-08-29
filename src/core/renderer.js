@@ -1,11 +1,12 @@
 // src/core/renderer.js
-// レンダラー生成とキャンバスサイズ合わせ処理
+// レンダラー生成とキャンバスサイズ合わせ
+
 /**
- * WebGLRenderer を初期化。
- * @param {typeof import('three')} THREE three 名前空間
- * @param {HTMLCanvasElement} canvas 描画先キャンバス
- * @param {object} cfg 設定値
- * @param {object} [opts] WebGLRenderer へ渡す追加オプション
+ * WebGLRenderer を生成します。
+ * @param {typeof import('three')} THREE three オブジェクト
+ * @param {HTMLCanvasElement} canvas 描画キャンバス
+ * @param {object} cfg 設定
+ * @param {object} [opts] WebGLRenderer 追加オプション
  * @returns {THREE.WebGLRenderer}
  */
 export function createRenderer(THREE, canvas, cfg, opts = {})
@@ -17,10 +18,10 @@ export function createRenderer(THREE, canvas, cfg, opts = {})
 }
 
 /**
- * Canvas の見た目サイズに合わせてレンダラーを調整。
+ * Canvas の見た目サイズに合わせてレンダラーを設定します。
  * @param {THREE.WebGLRenderer} renderer 対象レンダラー
  * @param {HTMLCanvasElement} canvas 対象キャンバス
- * @param {object} cfg 設定値
+ * @param {object} cfg 設定
  */
 export function fitToCanvas(renderer, canvas, cfg)
 {
@@ -44,11 +45,11 @@ export function fitToCanvas(renderer, canvas, cfg)
 }
 
 /**
- * リサイズイベントを設定し、レンダラー・カメラ・ポスト処理を調整する。
+ * リサイズイベントを設定し、レンダラー・カメラ・ポスト処理を更新します。
  * @param {THREE.WebGLRenderer} renderer 対象レンダラー
  * @param {HTMLCanvasElement} canvas 対象キャンバス
  * @param {THREE.Camera} camera 対象カメラ
- * @param {object} cfg 設定値
+ * @param {object} cfg 設定
  * @param {{resize:function(THREE.WebGLRenderer):void}} [post] ポスト処理パイプライン
  */
 export function setupResize(renderer, canvas, camera, cfg, post)
@@ -68,3 +69,4 @@ export function setupResize(renderer, canvas, camera, cfg, post)
   window.addEventListener("resize", onResize);
   onResize();
 }
+

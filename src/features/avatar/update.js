@@ -1,5 +1,5 @@
 // src/features/avatar/update.js
-// アバターの更新挙動: 回転とPSX風ジッター、爆散時の移動委譲
+// アバターの更新処理: 回転・PSX風ジッター・爆発の移動制御
 
 import { applyPS1Jitter } from "../../effects/psx-jitter.js";
 
@@ -31,3 +31,4 @@ export function createAvatarUpdater(THREE, camera, avatarMesh, cfg, explosion)
 
   return { update, setRotating };
 }
+

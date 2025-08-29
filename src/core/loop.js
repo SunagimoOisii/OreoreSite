@@ -1,12 +1,12 @@
 // src/core/loop.js
-// Fixed-step/main loop utilities
+// 固定ステップ/メインループ ユーティリティ
 
 /**
- * 固定ステップのループを開始し、タブの可視状態に応じて一時停止・再開する。
+ * 固定ステップのループを開始し、タブの可視状態に応じて一時停止/再開します。
  * @param {number} stepMs 1 ステップあたりのミリ秒(0 なら可変)
  * @param {(dtSec:number) => void} update 更新処理
  * @param {() => void} render 描画処理
- * @returns {{ start: () => void, stop: () => void, dispose: () => void }} 制御関数
+ * @returns {{ start: () => void, stop: () => void, dispose: () => void }} 制御用関数
  */
 export function runFixedStepLoop(stepMs, update, render)
 {
