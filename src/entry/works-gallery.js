@@ -1,6 +1,6 @@
 // works-gallery.js
 // Works: タブ・左右ナビ + Depth Carousel（3Dリング配置）
-import { loadWorks, getList } from '../features/works/loader.js';
+import { loadWorks, getList } from '../features/works/index.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const left = document.querySelector('.arrow-left');

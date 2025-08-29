@@ -5,7 +5,7 @@ import { createRenderer, setupResize } from "./renderer.js";
 import { createSceneBase } from "./scene.js";
 import { runFixedStepLoop } from "./loop.js";
 import { createControls } from "./controls.js";
-import { createPostPipeline } from "../effects/postprocess.js";
+import { createPostPipeline } from "../effects/index.js";
 
 /**
  * three.js アプリの初期化と実行をまとめます。
@@ -83,4 +83,3 @@ export function createThreeApp(THREE, options)
 
   return { dispose };
 }
-

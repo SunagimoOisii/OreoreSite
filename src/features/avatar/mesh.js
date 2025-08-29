@@ -1,7 +1,7 @@
 // src/features/avatar/mesh.js
 // アバターメッシュの生成と形状切替
 
-import { makeAffineMaterial, makePerspMaterial } from "../../effects/materials.js";
+import { makeAffineMaterial, makePerspMaterial } from "../../effects/index.js";
 
 /**
  * 初期ボックス形状＋テクスチャ付きマテリアルでアバターメッシュを生成します。

@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { GRAPHICS as CONFIG } from '../config/graphics.js';
-import { start as startBackground, setBackgroundFPS } from '../features/background/controller.js';
+import { start as startBackground, setBackgroundFPS } from '../features/background/index.js';
 
 const canvas = document.getElementById('bg-canvas');
 if (!canvas) console.warn('[bg] #bg-canvas not found');

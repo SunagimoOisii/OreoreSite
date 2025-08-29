@@ -4,9 +4,7 @@ import * as THREE from "three";
 
 import { GRAPHICS as CONFIG } from "../config/graphics.js";
 import { createThreeApp } from "../core/app.js";
-import { createAvatarMesh, changeAvatarShape } from "../features/avatar/mesh.js";
-import { createAvatarExplosion } from "../features/avatar/explode.js";
-import { createAvatarUpdater } from "../features/avatar/update.js";
+import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "../features/avatar/index.js";
 import { initBootOverlay } from "../features/boot/overlay.js";
 
 const canvas = document.getElementById("avatar-canvas");

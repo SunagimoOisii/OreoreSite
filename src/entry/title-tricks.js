@@ -1,7 +1,7 @@
 // title-tricks.js
 // h1 見出しの各文字に仕掛けを登録するモジュール
 
-import { increaseBalls, decreaseBalls, switchToSphereMode } from '../features/background/controller.js';
+import { increaseBalls, decreaseBalls, switchToSphereMode } from '../features/background/index.js';
 
 const titleElem = document.querySelector('main h1');
 const text = titleElem.textContent;

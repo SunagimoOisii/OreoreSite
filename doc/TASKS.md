@@ -29,13 +29,21 @@
 
 ## P2（中）
 
-- [ ] Works データのロケール分割
-  - 新規: `src/features/works/data.ja.json`
-  - 変更: `loader.js` でロケールファイルを選択可能に
-
-- [ ] Avatar のバレル化
+- [x] Avatar のバレル化
   - 新規: `src/features/avatar/index.js`（既存3モジュールを再エクスポート）
   - 変更: `src/entry/avatar.js` を `index.js` から import する形に整理
+  
+- [x] Background のバレル化
+  - 新規: `src/features/background/index.js`
+  - 変更: `src/entry/background.js`, `src/entry/title-tricks.js` の import を `../features/background` に短縮
+
+- [x] Works のバレル化
+  - 新規: `src/features/works/index.js`
+  - 変更: `src/entry/works-gallery.js` の import を `../features/works` に短縮
+
+- [x] Effects のバレル化
+  - 新規: `src/effects/index.js`
+  - 変更: `src/core/app.js`, `src/features/avatar/*` の import を `../effects`/`../../effects` に短縮
 
 ## P3（低）
 
