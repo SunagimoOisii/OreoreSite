@@ -127,7 +127,9 @@ export function createPostPipeline(THREE, renderer, cfg)
   }
   function resize(renderer)
   {
-    const w = renderer.domElement.width, h = renderer.domElement.height;
+    const w0 = renderer.domElement.width, h0 = renderer.domElement.height;
+    const w = Math.max(1, w0 | 0);
+    const h = Math.max(1, h0 | 0);
     rt.setSize(w, h);
     mat.uniforms.uResolution.value.set(w, h);
   }

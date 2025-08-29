@@ -30,7 +30,9 @@ export function fitToCanvas(renderer, canvas, cfg)
   if (cfg.PS1_MODE)
   {
     renderer.setPixelRatio(1);
-    renderer.setSize((w * cfg.INTERNAL_SCALE) | 0, (h * cfg.INTERNAL_SCALE) | 0, false);
+    const sw = Math.max(1, Math.floor(w * cfg.INTERNAL_SCALE));
+    const sh = Math.max(1, Math.floor(h * cfg.INTERNAL_SCALE));
+    renderer.setSize(sw, sh, false);
     renderer.domElement.style.imageRendering = "pixelated";
   }
   else
