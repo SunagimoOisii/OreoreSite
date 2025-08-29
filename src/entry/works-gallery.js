@@ -1,7 +1,7 @@
 // works-gallery.js
 // 制作物ギャラリーのタブ切替と表示処理
 // WORKS データを別モジュールから読み込む
-import { WORKS } from '../data/works-data.js';
+import { loadWorks, getList } from '../features/works/loader.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const image = document.querySelector('.works-image img');
@@ -19,8 +19,7 @@ let index = 0;
  */
 function getCurrentList()
 {
-  const langData = WORKS[currentLang] || {};
-  return langData[currentCategory] || [];
+  return getList(currentLang, currentCategory);
 }
 
 /**
@@ -84,4 +83,9 @@ right.addEventListener('click', () =>
   changeIndex(1);
 });
 
-render();
+// 初期化: JSON を読み込んでから描画
+(async () =>
+{
+  await loadWorks();
+  render();
+})();
