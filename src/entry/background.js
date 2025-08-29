@@ -11,7 +11,7 @@ if (!canvas) console.warn('[bg] #bg-canvas not found');
 const cfg = { PS1_MODE: true, INTERNAL_SCALE: 1 };
 
 let scene, camera, renderer;
-let grid;
+let grid;            // 遠近グリッド（GridHelper）
 let polyGroup; // 形状を差し替えるためのグループ
 let currentShape = 'ico';
 const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -22,7 +22,7 @@ const INST_MAX = 120;  // 上限
 const seeds = [];      // それぞれの軌道用シード
 const dummy = new THREE.Object3D();
 let elapsed = 0;       // 経過時間（秒）
-const INNER_Y_OFFSET = 0.7; // 内部キューブ群を少し上へ
+const INNER_Y_OFFSET = 0.7; // 内部キューブ群の中心を外殻の中心に合わせる
 
 function disposeObject(obj)
 {
@@ -95,7 +95,7 @@ function ensureInnerObjects()
   if (inst) return;
   // 小さなキューブの群（初期は控えめサイズ）
   const geo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.8 });
+  const mat = new THREE.MeshBasicMaterial({ color: 0x224444, transparent: true, opacity: 0.65 });
   inst = new THREE.InstancedMesh(geo, mat, INST_MAX);
   inst.count = instCount;
   polyGroup.add(inst);
@@ -108,8 +108,8 @@ function ensureInnerObjects()
       b0: Math.random() * Math.PI * 2,         // 初期位相B
       sa: 0.4 + Math.random() * 0.6,           // A方向の角速度(ラジアン/秒)
       sb: 0.2 + Math.random() * 0.5,           // B方向の角速度
-      r0: 0.9 + Math.random() * 0.7,           // 基本半径
-      rr: 0.2 + Math.random() * 0.2,           // 半径変動幅
+      r0: 0.35 + Math.random() * 0.75,         // 基本半径（中心寄り）
+      rr: 0.06 + Math.random() * 0.10,         // 半径変動幅（小さめ）
       spin: (Math.random() * 1.5)              // 自転速度
     };
   }
@@ -135,9 +135,8 @@ createThreeApp(THREE, {
     renderer = r; scene = s;
     renderer.shadowMap.enabled = false;
 
-    // 遠近グリッド（薄く）
+    // 遠近グリッド（GridHelper）
     grid = new THREE.GridHelper(120, 80, 0x335555, 0x224444);
-    // three r160 では material が配列の可能性がある
     const mats = Array.isArray(grid.material) ? grid.material : [grid.material];
     mats.forEach((m) => { m.opacity = 0.28; m.transparent = true; });
     grid.position.y = -2.0;
@@ -165,7 +164,7 @@ createThreeApp(THREE, {
     if (inst)
     {
       elapsed += dt;
-      const limitR = (currentShape === 'ico') ? 1.2 : 1.0; // icosahedronに収まる程度
+      const limitR = (currentShape === 'ico') ? 0.8 : 0.65; // より中心寄りに制限
       for (let i = 0; i < inst.count; i++)
       {
         const s = seeds[i];
@@ -175,7 +174,7 @@ createThreeApp(THREE, {
 
         const cr = Math.min(limitR, Math.max(0.4, r));
         const x = cr * Math.sin(b) * Math.cos(a);
-        const y = cr * Math.cos(b) * 0.7 + INNER_Y_OFFSET;   // 少し上に持ち上げる
+        const y = cr * Math.cos(b) * 0.6 + INNER_Y_OFFSET;   // 少し上に持ち上げる
         const z = cr * Math.sin(b) * Math.sin(a);
 
         dummy.position.set(x, y, z);
