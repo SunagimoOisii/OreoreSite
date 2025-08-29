@@ -1,207 +1,105 @@
-# OreoreSite アーキテクチャ概要
+# アーキテクチャと命名方針（提案）
 
-このドキュメントは、現在のファイル構成・依存関係・起動フロー・各レイヤの責務と Feature 契約（方針）をまとめたものです。GitHub Pages 上でのビルドレス配信（CDN importmap）を前提にしています。
+本プロジェクトは three.js を用いた小規模 Web サイト構成です。現状のディレクトリ構成は機能別に概ね整理されていますが、将来の拡張に向けて「エントリ（ページ起点）」と「機能モジュール」の責務分離と API 化を進めると保守性が上がります。
 
-## 目的と基本方針
-- 表示ロジックとデータ、基盤と機能を明確に分離して保守性を高める
-- 依存の方向を一方向に保つ（循環を避ける）
-- 将来、Vite 等のビルドへ移行してもパス置換だけで乗り換えられる
+## 現状の構成（概要）
 
-## ディレクトリ構成（抜粋）
+- `src/core/`:
+  - three.js の共通基盤（`app.js`, `renderer.js`, `scene.js`, `loop.js`, `controls.js`）
+  - 設定値 `CONFIG`（`core/config.js`）
+- `src/effects/`:
+  - ポストプロセスやマテリアル関連ユーティリティ（`postprocess.js`, `materials.js`, `psx-jitter.js`）
+- `src/features/`:
+  - 機能単位の実装（`avatar/*`, `background/physics.js`, `boot/overlay.js`, `works/*` など）
+- `src/entry/`:
+  - 各ページの起点スクリプト（`avatar.js`, `background.js`, `works-gallery.js`, `title-tricks.js`, `easter-egg.js`）
+- `src/styles/`:
+  - グローバル CSS によるスタイル
+
+特筆点:
+- `src/entry/title-tricks.js` が `src/entry/background.js` のエクスポートを直接参照しており、エントリ同士が結合しています（責務がにじんでいる）。
+- `core/config.js` はグラフィクス寄りの設定とレンダリング以外の設定が混在する余地があり、将来の分割候補です。
+
+## 推奨する命名・構成ルール
+
+1) ディレクトリ構造と役割
+- `src/entry/` は「ページ起点」のみを置く。処理ロジックは `src/features/*` 側で提供する API を呼び出す。
+- `src/features/<feature>/` は機能の実装と公開 API を持つ。外部公開点は `index.js`（または `controller.js`）に集約。
+- `src/config/` を新設し、設定をドメインで分離（例: `graphics.js`, `app.js`）。当面は `core/config.js` を残しつつ段階的に移行。
+
+2) ファイル命名
+- エントリ名: `*.entry.js`（例: `background.entry.js`, `avatar.entry.js`）
+- コントローラ/API: `controller.js` または `index.js`（機能の公開面）
+- ユーティリティ: 名詞または動作を表すケバブケース（例: `postprocess.js`, `psx-jitter.js`）
+- データ: ロケールごとにサフィックス（例: `works.ja.json`）。
+
+3) 依存関係の方向
+- `entry -> features -> core/effects` の一方向を厳守。`entry` 同士で import しない。
+
+4) API 露出の一貫性
+- UI から呼ばれる副作用関数は `features` のコントローラで公開する（例: 背景の玉個数増減、モード切替）。
+
+## 具体的な整理提案
+
+段階的移行を前提に、まずは API の抽出とエントリの結合解消から着手します。
+
+1) Background の API を `features` に抽出
+- 新設: `src/features/background/controller.js`
+  - 公開関数（例）: `start(canvas, cfg)`, `increaseBalls()`, `decreaseBalls()`, `toggleSphereMode()`
+  - 内部で three.js セットアップ・状態を保持し、`entry/background.js` はこれを利用するだけに簡素化。
+- 影響: `src/entry/title-tricks.js` は `src/features/background/controller.js` から関数を import（`entry` 間依存を解消）。
+
+2) Config の分割（将来）
+- 新設: `src/config/graphics.js`（`PS1_MODE`, `AFFINE_STRENGTH`, `INTERNAL_SCALE`, `FIXED_FPS`, `RGB_BITS`, `CA_*`）
+- 将来的にサイト全体の UI/機能設定が増えたら `src/config/app.js` を追加し、`entry` からは必要な設定だけを import。
+
+3) Works データのロケール分離（任意）
+- `src/features/works/data.ja.json` などに分割し、`loader.js` で言語ごとにロード切替できるように拡張。
+
+4) バレルファイルの追加（任意）
+- `src/features/avatar/index.js` で `createAvatarMesh`, `createAvatarExplosion`, `createAvatarUpdater` を再エクスポートし、利用側はエントリを簡素化。
+
+## ディレクトリ例（将来像）
 
 ```
-index.html                     # ルート直下（GH Pages 要件）
 src/
-  core/                        # 基盤（DOM非依存・機能中立）
-    config.js                  # 表示/挙動の設定値
-    controls.js                # three の操作ラッパ
-    loop.js                    # 固定ステップのメインループ
-    renderer.js                # WebGLRenderer 生成/リサイズ
-    scene.js                   # シーン/カメラの土台のみ（createSceneBase）
-  effects/                     # 見た目の表現（シェーダ/ポストプロセス等）
-    materials.js
+  config/
+    graphics.js
+    app.js
+  core/
+    app.js
+    renderer.js
+    loop.js
+    scene.js
+    controls.js
+  effects/
     postprocess.js
+    materials.js
     psx-jitter.js
-  features/                    # 機能（DOM連携も含む）
-    boot/
-      overlay.js               # ブート演出の初期化
-      boot.css                 # ブート演出のスタイル
+  features/
     background/
-      physics.js               # 背景の簡易物理（InstancedMesh 用）
+      controller.js   // ← エントリから呼ぶ公開 API
+      physics.js
     avatar/
-      mesh.js                  # メッシュ生成/形状切替
-      explode.js               # 爆散の生成/復元/更新
-      update.js                # 回転/PSXジッター/爆散委譲
+      index.js        // メッシュ/更新/爆発を集約
+      mesh.js
+      update.js
+      explode.js
+    boot/overlay.js
     works/
-      data.json                # 作品データ（言語→カテゴリ→配列）
-      loader.js                # JSON ローダ（fetch + キャッシュ）
-    about/
-      about.css
-  entry/                       # ページの起動スクリプト
-    avatar.js                  # Avatar の初期化/配線のみ
-    background.js
-    works-gallery.js
-    title-tricks.js
-    easter-egg.js
-  styles/
-    global/
-      base.css                 # :root トークン/リセット等
-      layout.css               # サイト横断のレイアウト
-img/                           # 画像（将来 public/assets/ へ移行予定）
-doc/
-  architecture.md              # 本ファイル
+      loader.js
+      data.ja.json
+  entry/
+    background.entry.js
+    avatar.entry.js
+    works-gallery.entry.js
+    title-tricks.entry.js
+    easter-egg.entry.js
 ```
 
-## レイヤの責務と依存ポリシー
+## メモ（現状から見えた改善余地）
 
-- core: three/WebGL の基盤。DOM非依存・機能名を含めない。小さく安定させる。
-  - 例: `renderer.js`, `loop.js`, `scene.js`
-- effects: 見た目の表現。シェーダ、ポストプロセス、量子化ジッター等。
-  - 例: `effects/materials.js`, `effects/postprocess.js`, `effects/psx-jitter.js`
-- features: 機能固有の状態や DOM 連携。スタイルやデータも隣接配置。
-  - 例: `features/boot/*`, `features/avatar/*`, `features/works/*`
+- 文字化けしている日本語コメント（文字コード）の統一（UTF-8）
+- `entry/background.js` が UI 用 API を直接 export しており、`entry/title-tricks.js` がそれを import しているため、機能境界を `features/background` へ移す
+- 将来的にビルド導入（Vite 等）を検討する場合は、エイリアス解決（`@core`, `@features`）も導入すると import 可読性が向上
 
-依存の方向（厳守）:
-
-```
-features ──▶ core
-        └──▶ effects (必要に応じて)
-effects  ──▶ core（型・three参照のみ）
-core     ──▶（他レイヤへ依存しない）
-```
-
-## 主要依存と読込方法
-- three.js: CDN importmap で固定バージョンを読み込み
-- three-subdivide: Avatar 爆散の細分化で使用
-- ブラウザ標準 API: Web Animations（ブート演出のフェード等）
-
-> 依存はすべて ESM モジュールとして `index.html` の importmap を通じて読み込み。
-
-## 起動フロー（トップページ）
-1. `index.html` が読み込まれる
-2. CSS: global と feature のスタイルを `<link>` で適用
-3. JS: エントリモジュールを `<script type="module">` で順に実行
-   - `entry/avatar.js`
-     - `createSceneBase` で土台作成 → `createAvatarMesh` をシーンに追加
-     - `createAvatarExplosion` と `createAvatarUpdater` で更新/演出を配線
-     - リサイズ/ブート演出の初期化
-   - `entry/background.js`
-     - 背景レンダリングと `BackgroundPhysics` の更新
-   - `entry/works-gallery.js`
-     - `loadWorks()` で JSON を fetch → `getList()` で描画
-
-## Feature 契約（方針）
-
-機能モジュールは、以下のいずれかの形で他所に依存されます。
-
-- 初期化関数（例）
-  - `init(container|deps): { dispose(): void }`
-  - 例: `features/boot/overlay.js` の `initBootOverlay()` は副作用型の初期化を提供
-- ファクトリ関数（現実装）
-  - `createAvatarMesh(THREE,cfg) -> { mesh, baseSize, texture }`
-  - `createAvatarExplosion(THREE, scene, mesh, baseSize) -> { explode, restore, tick, isExploded }`
-  - `createAvatarUpdater(THREE, camera, mesh, cfg, explosion) -> { update, setRotating }`
-  - `BackgroundPhysics`（クラス）: `step(dt)`, `sync()` を提供
-  - `works/loader.js`: `loadWorks()`, `getList(lang, category)`
-
-推奨ルール:
-- 入口（エントリ）から機能へ依存し、機能間はなるべく直接依存しない
-- 機能の公開 API は最小限にし、内部状態は隠蔽
-- DOM セレクタや CSS は機能のルート要素内にスコープする
-
-## データと国際化
-
-- 作品データは `features/works/data.json` に分離
-  - 形: `lang -> category -> Item[]`
-  - 取得: `loadWorks()` で 1 回 fetch（メモ化）。`getList()` が UI からの安定 API
-- 将来の拡張
-  - 言語別 JSON（`data.ja.json` / `data.en.json`）に分割し、言語だけ fetch
-  - JSON Schema で簡易バリデーションを追加
-
-## スタイル指針
-
-- グローバル: `styles/global/*` にサイト横断スタイル
-- 機能別: `features/<name>/*.css` に機能専用スタイル（接頭辞 `.boot-`, `.works-`, `.avatar-` 等）
-- 変数: `:root` に色/余白等のトークンを定義し、横断利用
-- アニメ抑制: `@media (prefers-reduced-motion: reduce)` で重い演出に代替を用意
-
-## ビルド/配信
-
-- 現状: ビルドレス構成、CDN importmap、`index.html` はリポジトリのルート（GitHub Pages 要件）
-- 将来: Vite 等に移行しても、レイヤ分離により移行コストが低い（エントリ/パスの集約済み）
-
-## 今後の改善候補
-
-- Feature の init/dispose 契約へ段階移行（今はファクトリ中心）
-- 画像パスの `public/assets/img/` への移行と参照の一本化
-- ESLint（flat config）/EditorConfig を導入（コード規約の明確化）
-- 軽量 i18n（`i18n/ja.json`/`en.json`）の導入
-
-## プログラム関係図（Mermaid）
-
-複雑さを避けるため、まず大枠（レイヤ間）を示し、その後に機能ごとの詳細図を載せます。矢印は「利用する（import する）」を意味します。
-
-### 概要図（レイヤ間）
-
-```mermaid
-flowchart LR
-  Entry["entry/*.js"] --> Features["features/*"]
-  Entry --> Core["core/*"]
-  Features --> Core
-  Features --> Effects["effects/*"]
-  Effects --> Core
-  Data["features/works/data.json"] --> Features
-
-  classDef entry fill:#eef,stroke:#88f
-  classDef feat fill:#efe,stroke:#5a5
-  classDef core fill:#ffe,stroke:#aa5
-  classDef eff  fill:#fee,stroke:#e88
-  classDef data fill:#fef,stroke:#a8a
-  class Entry entry
-  class Features feat
-  class Core core
-  class Effects eff
-  class Data data
-```
-
-### 詳細図（Avatar 機能）
-
-```mermaid
-flowchart TD
-  EA["entry/avatar.js"]
-  CScene["core/scene.js<br/>createSceneBase"]
-  CRenderer["core/renderer.js"]
-  CLoop["core/loop.js"]
-  EPost["effects/postprocess.js"]
-  EMat["effects/materials.js"]
-  EJit["effects/psx-jitter.js"]
-  FMesh["features/avatar/mesh.js"]
-  FExplode["features/avatar/explode.js"]
-  FUpdate["features/avatar/update.js"]
-  FBoot["features/boot/overlay.js"]
-
-  EA --> CScene
-  EA --> CRenderer
-  EA --> CLoop
-  EA --> EPost
-  EA --> FBoot
-  EA --> FMesh
-  EA --> FExplode
-  EA --> FUpdate
-  FMesh --> EMat
-  FUpdate --> EJit
-```
-
-### 詳細図（Works 機能）
-
-```mermaid
-flowchart LR
-  EW["entry/works-gallery.js"] --> LDR["features/works/loader.js"]
-  LDR --> DATA["features/works/data.json"]
-  STYLE["features/works/works.css"] -.-> EW
-```
-
-補足:
-- Entry はページの配線のみを担います。
-- Features は見た目（Effects）や基盤（Core）へ依存しますが、逆方向はありません。
-- Data は Features のローダが取得します（UI はローダ API のみを使用）。
