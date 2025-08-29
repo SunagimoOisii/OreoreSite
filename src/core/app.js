@@ -1,11 +1,11 @@
 // src/core/app.js
 // three.js アプリの共通ブートストラップ（renderer/scene/camera/loop/resize）
 
-import { createRenderer, setupResize } from "./renderer.js";
-import { createSceneBase } from "./scene.js";
-import { runFixedStepLoop } from "./loop.js";
-import { createControls } from "./controls.js";
-import { createPostPipeline } from "../effects/index.js";
+import { createRenderer, setupResize } from "@core/renderer.js";
+import { createSceneBase } from "@core/scene.js";
+import { runFixedStepLoop } from "@core/loop.js";
+import { createControls } from "@core/controls.js";
+import { createPostPipeline } from "@effects/index.js";
 
 /**
  * three.js アプリの初期化と実行をまとめます。

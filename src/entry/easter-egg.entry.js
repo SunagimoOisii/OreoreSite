@@ -1,4 +1,4 @@
-// 隠しシーケンス検知: ↑↑↓↓←→←→BA
+// イースターエッグ: ↑↑↓↓←→←→BA
 (() =>
 {
   const sequence = [
@@ -22,10 +22,9 @@
   {
     if (isEditable(e.target))
     {
-      return; // 文字入力の邪魔をしないよう除外
+      return; // 入力中の邪魔をしない
     }
 
-    // 正規化: 文字キーは e.code（KeyA/KeyB）、矢印は e.key を使用
     const key = e.code.startsWith('Key') ? e.code : e.key;
     const expect = sequence[index];
 
@@ -40,8 +39,9 @@
     }
     else
     {
-      // 先頭キーと一致する場合は index を 1、それ以外は 0 にリセット
+      // 先頭キーと一致なら index を 1、その他は 0 にリセット
       index = (key === sequence[0]) ? 1 : 0;
     }
   }, { passive: true });
 })();
+

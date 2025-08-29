@@ -3,7 +3,7 @@
 // UI から操作するための公開 API をここに集約します。
 
 import * as THREE_NS from 'three';
-import { createThreeApp } from '../../core/app.js';
+import { createThreeApp } from '@core/app.js';
 
 // 内部状態（モジュールスコープ）
 let appHandle = null;

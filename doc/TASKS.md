@@ -47,13 +47,13 @@
 
 ## P3（低）
 
-- [ ] entry ファイル命名の統一（`.entry.js` サフィックス）
+- [x] entry ファイル命名の統一（`.entry.js` サフィックス）
   - 変更: `src/entry/*.js` を `*.entry.js` にリネーム
   - 変更: HTML 側の `<script>` パス更新
 
-- [ ] import エイリアス導入（ビルド採用時）
-  - 例: `@core`, `@features`, `@effects`, `@config`
-  - Vite 等の設定で `resolve.alias` を設定
+- [x] import エイリアス導入（Import Maps）
+  - 追加: `@core/`, `@features/`, `@effects/`, `@config/` を `index.html` の importmap に設定
+  - 変更: 主要ファイルの import をエイリアスへ置換
 
 ## 受け入れ基準（抜粋）
 

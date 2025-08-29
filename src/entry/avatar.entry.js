@@ -1,15 +1,15 @@
-// avatar.js
-// three.js アバターのエントリ: 共通ブートで初期化～ループを構築
+// avatar.entry.js
+// three.js アバターのエントリ: ブート表示→初期化→更新ループを起動
 import * as THREE from "three";
 
-import { GRAPHICS as CONFIG } from "../config/graphics.js";
-import { createThreeApp } from "../core/app.js";
-import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "../features/avatar/index.js";
-import { initBootOverlay } from "../features/boot/overlay.js";
+import { GRAPHICS as CONFIG } from "@config/graphics.js";
+import { createThreeApp } from "@core/app.js";
+import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "@features/avatar/index.js";
+import { initBootOverlay } from "@features/boot/overlay.js";
 
 const canvas = document.getElementById("avatar-canvas");
 
-// アプリ共通ブートで初期化～ループまで実行
+// 初期化時に必要なハンドル
 let explosion, updater, avatarMesh, baseSize;
 
 createThreeApp(THREE, {
@@ -33,7 +33,7 @@ createThreeApp(THREE, {
     explosion = createAvatarExplosion(THREE, scene, avatarMesh, baseSize);
     updater = createAvatarUpdater(THREE, camera, avatarMesh, CONFIG, explosion);
 
-    // UI バインド（形状ボタンとクリック爆発）
+    // UI バインド（形状ボタンとクリック反応）
     const shapeButtons = document.querySelectorAll(".avatar-shapes button");
     const aboutCard = document.querySelector('.profile');
     function triggerAboutLoadingBar()
@@ -66,3 +66,4 @@ createThreeApp(THREE, {
   },
   update: (dt) => { if (updater) updater.update(dt); },
 });
+

@@ -1,6 +1,6 @@
 // works-gallery.js
-// Works: タブ・左右ナビ + Depth Carousel（3Dリング配置）
-import { loadWorks, getList } from '../features/works/index.js';
+// Works: タブUI＋Depth Carousel（3D風の並び）
+import { loadWorks, getList } from '@features/works/index.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const left = document.querySelector('.arrow-left');
@@ -42,7 +42,7 @@ function ensureCarousel()
   carousel = document.createElement('div');
   carousel.className = 'works-carousel';
 
-  // 左矢印の直後に挿入（右矢印の前）
+  // カルーセル直前に挿入（矢印の前）
   worksView.insertBefore(carousel, right);
 
   if (currentCard)
@@ -88,18 +88,18 @@ function render()
   const list = getCurrentList();
   if (!carousel || list.length === 0)
   {
-    // 既存構造のフォールバック（初期ロード直後など）
+    // 空表示のフォールバック（データ未ロードなど）
     const fallbackImg = document.querySelector('.works-image img');
     const fallbackUl = document.querySelector('.works-desc');
     if (fallbackImg && fallbackUl)
     {
       fallbackImg.style.display = 'none';
-      fallbackUl.innerHTML = '<li>項目がありません</li>';
+      fallbackUl.innerHTML = '<li>現在項目がありません</li>';
     }
     return;
   }
 
-  // 現在の各カードのoffsetクラスに基づいてコンテンツだけ更新
+  // 現在の各カードへoffsetクラスに合わせてコンテンツを更新
   cards.forEach((card) =>
   {
     const off = getOffset(card);
@@ -161,13 +161,13 @@ function changeIndex(delta)
   if (list.length === 0 || animating) return;
   const dir = Math.sign(delta) || 1;
   animating = true;
-  // 1ステップずつ回す（|delta|>1は分割）
+  // 1ステップずつ（|delta|>1は繰り返し）
   const steps = Math.abs(delta);
   let done = 0;
   const stepOnce = () =>
   {
     rotateClasses(dir);
-    // アニメ完了後にインデックスを更新して内容を再配置
+    // アニメ終了にインデックスを更新して中身をリフレッシュ
     setTimeout(() =>
     {
       index = (index + dir + list.length) % list.length;
@@ -201,14 +201,14 @@ function getOffset(card)
   return Number(val);
 }
 
-// 位置クラスを回す（dir=+1 で右矢印: 右のカードが中央へ）
+// 位置クラスを回す（dir=+1 で右へ: 左のカードが中央へ）
 function rotateClasses(dir)
 {
   cards.forEach((card) =>
   {
     const off = getOffset(card);
     if (off == null) return;
-    let next = off - dir; // 右矢印で左回転: pos-1 -> pos-0
+    let next = off - dir; // 右へ移動: pos-1 -> pos-0
     if (next < -2) next = 2;
     if (next > 2) next = -2;
     card.classList.remove('pos--2','pos--1','pos-0','pos-1','pos-2','is-center');
@@ -216,3 +216,4 @@ function rotateClasses(dir)
     if (next === 0) card.classList.add('is-center');
   });
 }
+
