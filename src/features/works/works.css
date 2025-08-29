@@ -172,6 +172,51 @@
   border-top: 1px solid rgba(255,255,255,0.2);
 }
 
+/* ===============================
+   Depth Carousel layout
+   =============================== */
+.works-carousel
+{
+  position: relative;
+  width: 100%;
+  perspective: 900px;
+}
+
+.works-carousel .works-content
+{
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: min(680px, 92%);
+  transition: transform 300ms ease, opacity 300ms ease, z-index 300ms ease;
+  will-change: transform;
+}
+
+/* center */
+.works-carousel .pos-0
+{
+  transform: translateX(-50%) translateZ(0) rotateY(0deg) scale(1.0);
+  z-index: 30;
+  opacity: 1.0;
+}
+/* right side: 角度と後退量を強め、視線を散らさない */
+.works-carousel .pos-1  { transform: translateX(calc(-50% + 600px)) translateZ(-220px) rotateY(42deg) scale(0.82); z-index: 18; opacity: 0.78; }
+.works-carousel .pos-2  { transform: translateX(calc(-50% + 715px)) translateZ(-420px) rotateY(82deg) scale(0.62); z-index:  8; opacity: 0.42; }
+/* left side (mirror) */
+.works-carousel .pos--1 { transform: translateX(calc(-50% - 600px)) translateZ(-220px) rotateY( -42deg) scale(0.82); z-index: 18; opacity: 0.78; }
+.works-carousel .pos--2 { transform: translateX(calc(-50% - 715px)) translateZ(-420px) rotateY( -82deg) scale(0.62); z-index:  8; opacity: 0.42; }
+
+/* 非中央カードは説明文を隠す（可読性確保） */
+.works-carousel .works-content:not(.is-center) .works-desc { display: none; }
+
+/* 非中央カードはステータスバー演出を隠す（煩雑さ回避） */
+.works-carousel .works-content:not(.is-center)::before,
+.works-carousel .works-content:not(.is-center)::after { display: none; }
+
+/* 非中央は操作不可にして誤クリック防止 */
+.works-carousel .works-content:not(.is-center) { pointer-events: none; }
+
 /* Works: ローディングバー（疑似要素で塗りつぶし） */
 .works-content::before
 {
@@ -216,6 +261,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  z-index: 50; /* カルーセルカードより前面に */
   padding: 0;
   margin-top: calc(16px + 150px - 20px);
   box-shadow:
@@ -262,3 +308,4 @@
   outline: 2px dashed var(--corner-marker);
   outline-offset: 2px;
 }
+
