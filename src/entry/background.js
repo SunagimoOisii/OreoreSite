@@ -10,6 +10,16 @@ if (!canvas) console.warn('[bg] #bg-canvas not found');
 // -------- 設定 --------
 const cfg = { PS1_MODE: true, INTERNAL_SCALE: 1 };
 
+// ---- 個別FPS（Hz）設定: 0以下で停止、null/undefinedでループ依存（既定=30）
+let POLY_FPS = 20;   // 多面体の回転更新レート
+let GRID_FPS = 24;   // 遠近グリッドの回転更新レート
+let INNER_FPS = 15;  // 内部キューブ群の軌道更新レート
+
+// 内部用の時間アキュムレータ
+let accPoly = 0;
+let accGrid = 0;
+let accInner = 0;
+
 let scene, camera, renderer;
 let grid;            // 遠近グリッド（GridHelper）
 let polyGroup; // 形状を差し替えるためのグループ
@@ -149,40 +159,66 @@ createThreeApp(THREE, {
   {
     if (prefersReduced) return; // 低モーション環境では静止
 
-    // 緩やかに回転
-    if (polyGroup)
+    // ---- 多面体の更新 ----
+    if (polyGroup && POLY_FPS !== 0)
     {
-      polyGroup.rotation.y += 0.18 * dt;
-      polyGroup.rotation.x += 0.05 * dt;
-    }
-    if (grid)
-    {
-      grid.rotation.y += 0.015 * dt;
-    }
-
-    // 内部オブジェクトのアニメーション（ゆったりした軌道運動）
-    if (inst)
-    {
-      elapsed += dt;
-      const limitR = (currentShape === 'ico') ? 0.8 : 0.65; // より中心寄りに制限
-      for (let i = 0; i < inst.count; i++)
+      const step = (POLY_FPS && POLY_FPS > 0) ? (1 / POLY_FPS) : dt;
+      accPoly += dt;
+      while (accPoly >= step)
       {
-        const s = seeds[i];
-        const a = s.a0 + elapsed * s.sa;
-        const b = s.b0 + elapsed * s.sb;
-        const r = s.r0 + Math.sin(elapsed * 0.8 + i) * s.rr;
-
-        const cr = Math.min(limitR, Math.max(0.4, r));
-        const x = cr * Math.sin(b) * Math.cos(a);
-        const y = cr * Math.cos(b) * 0.6 + INNER_Y_OFFSET;   // 少し上に持ち上げる
-        const z = cr * Math.sin(b) * Math.sin(a);
-
-        dummy.position.set(x, y, z);
-        dummy.rotation.set(a * 0.5, b * 0.5, (a + b) * 0.25);
-        dummy.updateMatrix();
-        inst.setMatrixAt(i, dummy.matrix);
+        // 1ステップあたりの角度（rad/s を step 秒分）
+        polyGroup.rotation.y += 0.18 * step;
+        polyGroup.rotation.x += 0.05 * step;
+        accPoly -= step;
       }
-      inst.instanceMatrix.needsUpdate = true;
+    }
+
+    // ---- グリッドの更新 ----
+    if (grid && GRID_FPS !== 0)
+    {
+      const step = (GRID_FPS && GRID_FPS > 0) ? (1 / GRID_FPS) : dt;
+      accGrid += dt;
+      while (accGrid >= step)
+      {
+        grid.rotation.y += 0.015 * step;
+        accGrid -= step;
+      }
+    }
+
+    // ---- 内部オブジェクト（InstancedMesh）更新 ----
+    if (inst && INNER_FPS !== 0)
+    {
+      const step = (INNER_FPS && INNER_FPS > 0) ? (1 / INNER_FPS) : dt;
+      accInner += dt;
+      let updated = false;
+      while (accInner >= step)
+      {
+        elapsed += step;
+        updated = true;
+        accInner -= step;
+      }
+      if (updated)
+      {
+        const limitR = (currentShape === 'ico') ? 0.8 : 0.65; // 収まり半径
+        for (let i = 0; i < inst.count; i++)
+        {
+          const s = seeds[i];
+          const a = s.a0 + elapsed * s.sa;
+          const b = s.b0 + elapsed * s.sb;
+          const r = s.r0 + Math.sin(elapsed * 0.8 + i) * s.rr;
+
+          const cr = Math.min(limitR, Math.max(0.4, r));
+          const x = cr * Math.sin(b) * Math.cos(a);
+          const y = cr * Math.cos(b) * 0.6 + INNER_Y_OFFSET;
+          const z = cr * Math.sin(b) * Math.sin(a);
+
+          dummy.position.set(x, y, z);
+          dummy.rotation.set(a * 0.5, b * 0.5, (a + b) * 0.25);
+          dummy.updateMatrix();
+          inst.setMatrixAt(i, dummy.matrix);
+        }
+        inst.instanceMatrix.needsUpdate = true;
+      }
     }
   },
   render: ({ renderer: r, scene: s, camera: c }) =>
@@ -211,4 +247,19 @@ export function switchToSphereMode()
   currentShape = (currentShape === 'ico') ? 'ring' : 'ico';
   makeWirePoly(currentShape);
   // instanced は維持。見切れないように次フレームで半径制限が反映される。
+}
+
+/**
+ * 背景アニメの個別FPSを設定する（Hz）。
+ * 例: setBackgroundFPS({ poly: 15, inner: 20, grid: 10 })
+ * - 値 <= 0 で対象の更新を停止
+ * - null/undefined は変更しない
+ */
+export function setBackgroundFPS({ poly, inner, grid } = {})
+{
+  if (typeof poly === 'number') POLY_FPS = poly;
+  if (typeof inner === 'number') INNER_FPS = inner;
+  if (typeof grid === 'number') GRID_FPS = grid;
+  // アキュムレータはリセット（カクつきを避ける）
+  accPoly = accGrid = accInner = 0;
 }
