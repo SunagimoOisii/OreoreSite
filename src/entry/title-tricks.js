@@ -32,6 +32,25 @@ export function registerTrick(index, handler)
   tricks.set(index, handler);
 }
 
+/**
+ * 文字キーでトリックを登録します（同じ文字が複数あれば全てに紐付け）。
+ * タイトル文言が変わっても文字ベースである程度耐性が出ます。
+ * @param {string} char 対象の1文字
+ * @param {() => void} handler 実行関数
+ */
+export function registerTrickByChar(char, handler)
+{
+  const target = (char === ' ' ? '\\u00A0' : char);
+  charElems.forEach((el) =>
+  {
+    if (el.textContent === target)
+    {
+      const idx = Number(el.dataset.index);
+      tricks.set(idx, handler);
+    }
+  });
+}
+
 // クリックされた文字に対応する仕掛けを実行
 titleElem.addEventListener('click', (e) =>
 {

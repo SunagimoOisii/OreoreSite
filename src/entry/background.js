@@ -112,6 +112,7 @@ export function switchToSphereMode()
   BALLS.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   scene.add(BALLS);
 
-  physics = new BackgroundPhysics(THREE, BALLS, { ...physicsCfg, mode: 'sphere' });
+  // 既存の物理インスタンスを活かし、モード切替とメッシュ差し替えを行う
+  physics.attachMesh(BALLS);
+  physics.setMode('sphere');
 }
-

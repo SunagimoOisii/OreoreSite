@@ -4,6 +4,36 @@
 let _data = null;
 
 /**
+ * 読み込んだ JSON をざっくり検証し、期待形でなければ false を返す。
+ * lang -> { game: Item[], tool: Item[], other: Item[] }
+ * Item: { src:string, alt?:string, desc:string[] }
+ */
+function _validateData(obj)
+{
+  if (!obj || typeof obj !== 'object') return false;
+  const langs = Object.keys(obj);
+  if (langs.length === 0) return false;
+  for (const lang of langs)
+  {
+    const d = obj[lang];
+    if (!d || typeof d !== 'object') return false;
+    for (const cat of ['game', 'tool', 'other'])
+    {
+      if (!Array.isArray(d[cat])) return false;
+      for (const item of d[cat])
+      {
+        if (!item || typeof item !== 'object') return false;
+        if (typeof item.src !== 'string') return false;
+        if (item.alt != null && typeof item.alt !== 'string') return false;
+        if (!Array.isArray(item.desc)) return false;
+        if (!item.desc.every((s) => typeof s === 'string')) return false;
+      }
+    }
+  }
+  return true;
+}
+
+/**
  * works データを読み込み、メモリにキャッシュします。
  * @param {string} [url]
  */
@@ -20,7 +50,14 @@ export async function loadWorks(url = './src/features/works/data.json')
   }
   try
   {
-    _data = await res.json();
+    const j = await res.json();
+    if (_validateData(j))
+      _data = j;
+    else
+    {
+      console.warn('[works] JSON 構造が不正なためフォールバックします');
+      _data = { ja: { game: [], tool: [], other: [] } };
+    }
   }
   catch (e)
   {
@@ -49,4 +86,3 @@ export function getList(lang = 'ja', category = 'game')
   const langData = getLang(lang);
   return langData[category] || [];
 }
-

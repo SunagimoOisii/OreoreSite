@@ -224,5 +224,48 @@ export class BackgroundPhysics
     this.mesh.count = this.count;
     this.mesh.instanceMatrix.needsUpdate = true;
   }
-}
 
+  /**
+   * モードを切り替える（'cube' | 'sphere'）。必要なら位置をクランプします。
+   * @param {'cube'|'sphere'} mode
+   */
+  setMode(mode)
+  {
+    this.mode = mode === 'sphere' ? 'sphere' : 'cube';
+    // 現在位置を新しい境界へクランプ
+    for (let i = 0; i < this.count; i++)
+    {
+      const i3 = i * 3;
+      if (this.mode === 'cube')
+      {
+        const limit = this.half - this.radius;
+        this.pos[i3 + 0] = Math.max(-limit, Math.min(limit, this.pos[i3 + 0]));
+        this.pos[i3 + 1] = Math.max(-limit, Math.min(limit, this.pos[i3 + 1]));
+        this.pos[i3 + 2] = Math.max(-limit, Math.min(limit, this.pos[i3 + 2]));
+      }
+      else
+      {
+        const limit = this.sphereRadius - this.radius;
+        const x = this.pos[i3 + 0];
+        const y = this.pos[i3 + 1];
+        const z = this.pos[i3 + 2];
+        const r = Math.hypot(x, y, z) || 1;
+        const scale = Math.min(1, limit / r);
+        this.pos[i3 + 0] = x * scale;
+        this.pos[i3 + 1] = y * scale;
+        this.pos[i3 + 2] = z * scale;
+      }
+    }
+  }
+
+  /**
+   * 表示用の InstancedMesh を差し替える（描画側の再生成と同期用）。
+   * @param {import('three').InstancedMesh} mesh
+   */
+  attachMesh(mesh)
+  {
+    this.mesh = mesh;
+    this.mesh.count = this.count;
+    this.mesh.instanceMatrix.setUsage(this.THREE.DynamicDrawUsage);
+  }
+}
