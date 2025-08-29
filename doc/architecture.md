@@ -137,3 +137,92 @@ core     ──▶（他レイヤへ依存しない）
 - ESLint（flat config）/EditorConfig を導入（コード規約の明確化）
 - 軽量 i18n（`i18n/ja.json`/`en.json`）の導入
 
+## プログラム関係図（Mermaid）
+
+下図は主要モジュール間の依存関係を示します。矢印は「利用する（import する）」を意味します。
+
+```mermaid
+flowchart TD
+  %% レイヤ
+  subgraph Entry
+    EA[entry/avatar.js]
+    EB[entry/background.js]
+    EW[entry/works-gallery.js]
+    ET[entry/title-tricks.js]
+    EE[entry/easter-egg.js]
+  end
+
+  subgraph Core
+    CScene[core/scene.js\n(createSceneBase)]
+    CRenderer[core/renderer.js]
+    CLoop[core/loop.js]
+    CControls[core/controls.js]
+    CConfig[core/config.js]
+  end
+
+  subgraph Effects
+    EMat[effects/materials.js]
+    EPost[effects/postprocess.js]
+    EJit[effects/psx-jitter.js]
+  end
+
+  subgraph Features
+    FAvMesh[features/avatar/mesh.js]
+    FAvExplode[features/avatar/explode.js]
+    FAvUpdate[features/avatar/update.js]
+    FBoot[features/boot/overlay.js]
+    FBg[features/background/physics.js]
+    FWorksLdr[features/works/loader.js]
+  end
+
+  subgraph Styles
+    SBase[styles/global/base.css]
+    SLayout[styles/global/layout.css]
+    SBoot[features/boot/boot.css]
+    SWorks[features/works/works.css]
+    SAbout[features/about/about.css]
+  end
+
+  subgraph Data
+    DWorks[features/works/data.json]
+  end
+
+  %% Entry -> 使用先
+  EA --> CScene
+  EA --> CRenderer
+  EA --> CControls
+  EA --> CLoop
+  EA --> EPost
+  EA --> FAvMesh
+  EA --> FAvExplode
+  EA --> FAvUpdate
+  EA --> FBoot
+
+  EB --> CRenderer
+  EB --> CLoop
+  EB --> FBg
+
+  EW --> FWorksLdr
+
+  ET --> SBase
+  EE --> SBase
+
+  %% Features -> Effects/Core
+  FAvMesh --> EMat
+  FAvUpdate --> EJit
+  FAvExplode --> CScene
+  FBoot --> SBoot
+  FBg --> CScene
+  FWorksLdr --> DWorks
+
+  %% Effects -> Core（表現は three/Core を前提）
+  EMat --> CConfig
+  EPost --> CRenderer
+  EJit --> CConfig
+```
+
+補足:
+- Entry はページの配線のみを担い、Features/Efffects/Core を初期化順に呼び出します。
+- Features は見た目（Effects）や基盤（Core）へ依存しますが、逆方向はありません。
+- Data は Features のローダが取得します（UI からはローダの安定 API のみを使用）。
+
