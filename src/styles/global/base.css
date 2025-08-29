@@ -9,6 +9,11 @@
   --card: rgba(26, 26, 26, 0.7);
   --accent: rgba(254, 64, 64, 1);
   --radius: 12px;
+  /* UI Chrome tokens */
+  --chrome-bevel-light: rgba(255, 255, 255, 0.25);
+  --chrome-bevel-dark: rgba(0, 0, 0, 0.55);
+  --chrome-shadow-hard: rgba(0, 0, 0, 0.8);
+  --corner-marker: var(--accent);
 }
 
 /* ===============================

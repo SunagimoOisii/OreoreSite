@@ -6,20 +6,29 @@
   --text: #eee;
   backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
   -webkit-backdrop-filter: blur(1px);
+  position: relative;
   display: flex;
   gap: 16px;
   align-items: center;
   background: var(--card);
   padding: 16px;
-  border-radius: var(--radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  padding-bottom: 32px; /* ステータスバー分の余白 */
+  border-radius: 0; /* 角丸解除 */
+  /* PS1風: 厚ベベル + 硬い段階シャドウ */
+  box-shadow:
+    inset 0 2px 0 var(--chrome-bevel-light),
+    inset 2px 0 0 var(--chrome-bevel-light),
+    inset 0 -2px 0 var(--chrome-bevel-dark),
+    inset -2px 0 0 var(--chrome-bevel-dark),
+    0 2px 0 var(--chrome-shadow-hard),
+    0 4px 0 rgb(0 0 0 / 0.45);
 }
 .profile img
 {
   width: 160px;
   height: 160px;
   object-fit: cover;
-  border-radius: var(--radius);
+  border-radius: 0; /* 角丸解除（必要に応じて戻せます）*/
 }
 .bio
 {
@@ -47,7 +56,7 @@
   width: 325px;
   height: 325px;
   display: block;
-  border-radius: var(--radius);
+  border-radius: 0; /* 角丸解除 */
   clip-path: none;
   mask: none;
   background:#ddd
@@ -68,14 +77,59 @@
   color: rgba(51, 51, 51, 1);
   border: none;
   padding: 4px 8px;
-  border-radius: var(--radius);
+  border-radius: 0; /* 角丸解除 */
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  /* 厚ベベル */
+  box-shadow:
+    inset 0 2px 0 var(--chrome-bevel-light),
+    inset 2px 0 0 var(--chrome-bevel-light),
+    inset 0 -2px 0 var(--chrome-bevel-dark),
+    inset -2px 0 0 var(--chrome-bevel-dark);
 }
 .avatar-shapes button:hover
 {
   background: var(--accent);
   color: #fff;
+}
+/* Step2: ステータスバー（下辺の細帯） */
+.profile::after
+{
+  content: "ABOUT";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 22px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.85);
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(0,0,0,0.15));
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+.avatar-shapes button:active
+{
+  /* 押下でベベル反転風 */
+  box-shadow:
+    inset 0 2px 0 var(--chrome-bevel-dark),
+    inset 2px 0 0 var(--chrome-bevel-dark),
+    inset 0 -2px 0 var(--chrome-bevel-light),
+    inset -2px 0 0 var(--chrome-bevel-light);
+}
+
+.avatar-shapes button:focus-visible::after
+{
+  /* Step2: 選択カーソル（上向き小三角） */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid var(--corner-marker);
 }
 
 /* ==== CRT風オーバーレイ（3Dキャンバスだけ） ==== */
