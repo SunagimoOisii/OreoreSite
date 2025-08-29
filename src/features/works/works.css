@@ -43,6 +43,8 @@
   margin: 0 auto;
   backdrop-filter: blur(1px);   /* Safari/Chrome 対応 */
   -webkit-backdrop-filter: blur(1px);
+  position: relative;
+  z-index: 1;            /* 背景キャンバスより前面に */
 }
 .arrow 
 {
@@ -77,6 +79,8 @@
   align-items: flex-start;
   width: 100%;
   gap: 8px;
+  position: relative;
+  z-index: 2;            /* 内容物はさらに前面に */
 }
 .works-image 
 {

@@ -89,3 +89,5 @@ right.addEventListener('click', () =>
   await loadWorks();
   render();
 })();
+
+// 背景は site-wide の #bg-canvas に統合しました（see: src/entry/background.js）。
