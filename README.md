@@ -1,57 +1,54 @@
 # SUNAGIMO HOUSE (OreoreSite)
 
-個人サイト用のフロントエンド資材です。ビルドレス（CDN importmap）で three.js を用い、トップページではアバター表示・背景演出・作品ギャラリーを提供します。
+個人サイト用のフロントエンドです。ビルドレス（CDN importmap）で three.js を用い、トップページではアバター表示・背景アニメーション・作品ギャラリーを提供します。
 
 ## 特徴
-- ビルド不要（`<script type="module">` ＋ importmap）
-- 責務分離（core/effects/features）で保守しやすい構成
-- 作品データを JSON 化（UI からデータを分離）
-- CSS も Global と Feature 専用に分割
+- ビルドレス構成（`<script type="module">` + importmap）
+- 責務分割（core/effects/features/entry）
+- 作品データは JSON（UI はローダ API だけを利用）
+- CSS は Global と Feature の二層
+- 共通ブート `src/core/app.js` によりエントリ初期化の重複を解消
 
-## すぐ試す
-- GitHub Pages 上では `index.html`（リポジトリのルート直下）にアクセス
-- ローカルで開く場合は、簡易サーバを使って配信してください（JSON fetch を使うため file:// 直開きでは動作しない場合があります）
+## 使い方（ローカル）
+- GitHub Pages では `index.html` に直接アクセス
+- ローカル検証は簡易サーバを使用（`file://` では JSON fetch が失敗する場合があります）
   - Python: `python -m http.server -b 127.0.0.1 8080`
-  - Node (任意): `npx serve .`
-  - VS Code: Live Server 拡張
+  - Node: `npx serve .`
+  - VS Code: Live Server
 
 ## 依存
-- three.js（importmap で CDN から読み込み）
-- three-subdivide（アバター爆散の頂点細分化に使用）
+- three.js（importmap で CDN 読み込み）
+- three-subdivide（アバター爆発の分割に使用）
 
-## 構成（抜粋）
+## 構成
 ```
-index.html                  # ルート直下（GitHub Pages 要件）
+index.html                  # ルートページ
 src/
-  core/                     # 基盤（DOM非依存・機能中立）
-  effects/                  # 見た目の表現（シェーダ/ポストプロセス等）
-  features/                 # 機能（DOM連携・スタイル・データを隣接配置）
-  entry/                    # ページの起動スクリプト
-  styles/global/            # サイト横断スタイル（トークン/レイアウト）
-img/                        # 画像（将来 public/assets/ へ移行余地）
-doc/architecture.md         # 設計の詳細（レイヤ責務・依存・起動フロー）
+  core/                     # 基盤（DOMに非依存のロジック）
+    app.js                  # three アプリ共通ブート（新規）
+    config.js               # 設定値
+    controls.js             # OrbitControls ラッパ
+    loop.js                 # 固定ステップ/メインループ
+    renderer.js             # WebGLRenderer 作成/リサイズ
+    scene.js                # Scene/Camera の最小生成
+  effects/                  # 表現（シェーダ/ポストプロセス等）
+  features/                 # 機能（DOMアグリゲート/データ）
+  entry/                    # ページのエントリスクリプト
+  styles/global/            # サイト共通スタイル（トークン/レイアウト）
+img/                        # 画像（将来 public/assets/ に移行予定）
+doc/architecture.md         # 設計ドキュメント
 ```
 
-レイヤの依存は一方向です。
+設計の依存は以下を維持します。
 ```
-features ──▶ core
-        └──▶ effects
-effects  ──▶ core
-core     ──▶（他レイヤへ依存しない）
+features → core（必要に応じて effects）
+effects  → core
+core     → 外部（DOM）へ非依存
 ```
 
-## 作品データ（Works）
-- `src/features/works/data.json` に言語→カテゴリ→配列の三層で定義
-- ローダ `src/features/works/loader.js` が `loadWorks()`／`getList(lang, category)` を提供
-- UI からはローダの関数のみを呼び出し、データ構造の変更はローダ内で吸収
-
-## CSS 方針
-- Global: `src/styles/global/*` に :root トークン・レイアウト
-- Feature: `src/features/<feature>/*.css` に機能専用スタイル（`.boot-`, `.works-`, `.avatar-`）
-
-## 開発メモ
-- three のバージョンは importmap で固定
-- 将来 Vite 等のビルドに移行する場合も、エントリ/フォルダ構成はそのまま活かせます
+## 最近の変更
+- 共通ブート `src/core/app.js` を導入し、`src/entry/avatar.js` と `src/entry/background.js` の初期化～ループ重複を解消
+- `license.html` の CSS 参照を `src/styles/global/*` に修正
 
 ## ライセンス
 - ライセンス表記は `LICENSE` および `license.html` を参照してください
