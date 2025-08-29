@@ -1,0 +1,5 @@
+# 解析不要/非対象のパス
+node_modules/
+.git/
+img/
+**/*.html

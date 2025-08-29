@@ -5,7 +5,7 @@
 ## 進捗
 - [x] エントリ初期化の重複排除（core/app.js 追加、`avatar.js`/`background.js` 置換）
 - [x] `license.html` の CSS パスを `src/styles/global/*` に修正
-- [ ] ESLint（flat）/EditorConfig の導入
+- [x] ESLint（flat）/EditorConfig の導入（`eslint.config.mjs` / `.editorconfig` / `.eslintignore`）
 
 ## 残タスク
 - CONFIG の整理: 用途別ネームスペース化または JSDoc 強化。利用側へは必要最小限のみ渡す（疎結合化）。
@@ -20,4 +20,3 @@
 - P1: 重複排除（core/app.js）/ ライセンス参照修正 / Lint 設定（←一部完了）
 - P2: i18n / Works スキーマ検証 / Title Tricks 改修
 - P3: 画像配置整理 / 背景物理 API 化 / コメント整備
-

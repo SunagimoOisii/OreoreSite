@@ -1,0 +1,16 @@
+# EditorConfig は複数エディタ間で基本スタイルを統一します
+# 詳細: https://editorconfig.org/
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.md]
+# Markdown は行末空白が意味を持つことがあるため保持
+trim_trailing_whitespace = false

@@ -50,6 +50,11 @@ core     → 外部（DOM）へ非依存
 - 共通ブート `src/core/app.js` を導入し、`src/entry/avatar.js` と `src/entry/background.js` の初期化～ループ重複を解消
 - `license.html` の CSS 参照を `src/styles/global/*` に修正
 
+## Lint/Editor 設定
+- EditorConfig: `.editorconfig` を追加（改行/インデント/末尾改行などの統一）
+- ESLint(flat): `eslint.config.mjs` を追加（ブラウザ ESM 前提の最小ルール）
+  - 実行例: `npm i -D eslint` → `npx eslint .`
+  - 備考: CDN importmap(three 等)向けに import 解決の厳格化は行っていません。必要に応じて `eslint-plugin-import` を導入してください。
+
 ## ライセンス
 - ライセンス表記は `LICENSE` および `license.html` を参照してください
-
