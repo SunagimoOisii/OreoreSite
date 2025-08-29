@@ -10,14 +10,37 @@ import { CONFIG } from "../core/config.js";
 import { createControls } from "../core/controls.js";
 import { createPostPipeline } from "../effects/postprocess.js";
 import { createRenderer, setupResize } from "../core/renderer.js";
-import { createSceneGraph } from "../core/scene.js";
+import { createSceneBase } from "../core/scene.js";
+import { makeAffineMaterial, makePerspMaterial } from "../effects/materials.js";
 import { applyPS1Jitter } from "../effects/psx-jitter.js";
 import { runFixedStepLoop } from "../core/loop.js";
 import { initBootOverlay } from "../features/boot/overlay.js";
 
 const canvas = document.getElementById("avatar-canvas");
 const renderer = createRenderer(THREE, canvas, CONFIG);
-const { scene, camera, avatarMesh, tex, baseSize } = createSceneGraph(THREE, CONFIG);
+const { scene, camera } = createSceneBase(THREE, CONFIG);
+
+// Avatar mesh creation moved from scene to here (injection)
+const baseSize = 2.25;
+const geo0 = new BoxGeometry(baseSize, baseSize, baseSize);
+const tex = new THREE.TextureLoader().load("img/me.jpg", t =>
+{
+  t.colorSpace = THREE.SRGBColorSpace;
+  if (CONFIG.PS1_MODE)
+  {
+    t.generateMipmaps = false;
+    t.minFilter = THREE.NearestFilter;
+    t.magFilter = THREE.NearestFilter;
+    t.anisotropy = 0;
+  }
+});
+let matColor;
+if (CONFIG.PS1_MODE)
+  matColor = makeAffineMaterial(THREE, tex, CONFIG.AFFINE_STRENGTH, false);
+else
+  matColor = makePerspMaterial(THREE, tex, false);
+const avatarMesh = new THREE.Mesh(geo0, matColor);
+scene.add(avatarMesh);
 const controls = createControls(THREE, camera, renderer.domElement, CONFIG);
 const post = createPostPipeline(THREE, renderer, CONFIG); // { render(scene,camera), resize() }
 
