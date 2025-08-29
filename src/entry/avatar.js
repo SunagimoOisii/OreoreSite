@@ -37,6 +37,15 @@ createThreeApp(THREE, {
 
     // UI バインド（形状ボタンとクリック爆発）
     const shapeButtons = document.querySelectorAll(".avatar-shapes button");
+    const aboutCard = document.querySelector('.profile');
+    function triggerAboutLoadingBar()
+    {
+      if (!aboutCard) return;
+      aboutCard.classList.remove('loading');
+      void aboutCard.offsetWidth;
+      aboutCard.classList.add('loading');
+      setTimeout(() => aboutCard.classList.remove('loading'), 1400);
+    }
     shapeButtons.forEach(btn =>
     {
       btn.addEventListener("click", () =>
@@ -44,6 +53,7 @@ createThreeApp(THREE, {
         explosion.restore();
         updater.setRotating(true);
         changeAvatarShape(THREE, avatarMesh, baseSize, btn.dataset.shape);
+        triggerAboutLoadingBar();
       });
     });
 
@@ -58,4 +68,3 @@ createThreeApp(THREE, {
   },
   update: (dt) => { if (updater) updater.update(dt); },
 });
-

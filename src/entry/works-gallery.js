@@ -8,6 +8,18 @@ const image = document.querySelector('.works-image img');
 const descList = document.querySelector('.works-desc');
 const left = document.querySelector('.arrow-left');
 const right = document.querySelector('.arrow-right');
+const worksCard = document.querySelector('.works-content');
+
+function triggerWorksLoadingBar()
+{
+  if (!worksCard) return;
+  worksCard.classList.remove('loading');
+  // reflow to restart animation
+  void worksCard.offsetWidth;
+  worksCard.classList.add('loading');
+  // 自動終了（演出用）。コンテンツ表示は待たない。
+  setTimeout(() => worksCard.classList.remove('loading'), 1400);
+}
 
 // 現在の言語とカテゴリを保持
 let currentLang = 'ja';
@@ -56,6 +68,7 @@ tabs.forEach((btn) =>
     currentCategory = btn.dataset.category;
     index = 0;
     render();
+    triggerWorksLoadingBar();
   });
 });
 
@@ -76,11 +89,13 @@ function changeIndex(delta)
 left.addEventListener('click', () =>
 {
   changeIndex(-1);
+  triggerWorksLoadingBar();
 });
 
 right.addEventListener('click', () =>
 {
   changeIndex(1);
+  triggerWorksLoadingBar();
 });
 
 // 初期化: JSON を読み込んでから描画

@@ -172,6 +172,34 @@
   border-top: 1px solid rgba(255,255,255,0.2);
 }
 
+/* Works: ローディングバー（疑似要素で塗りつぶし） */
+.works-content::before
+{
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 22px;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background:
+    repeating-linear-gradient(to right,
+      rgba(255,255,255,0.35) 0 10px,
+      rgba(255,255,255,0.15) 10px 20px);
+  opacity: 0.35;
+}
+
+@keyframes bar-load {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.works-content.loading::before
+{
+  transform: none;
+  animation: bar-load 1.2s steps(12) 1;
+}
+
 /* PS1 UI Chrome: Works Arrows (Left/Right) */
 .arrow,
 .arrow-left,
