@@ -1,7 +1,10 @@
-// イースターエッグ: ↑↑↓↓←→←→BA
+// Easter Egg: 秘の入力列で背景カメラを俯瞰に切替
+import { background } from '@features/background/index.js';
+
 (() =>
 {
-  const sequence = [
+  const sequence = 
+  [
     'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
     'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
     'KeyB', 'KeyA'
@@ -18,11 +21,36 @@
     return el.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA';
   };
 
+  const hideMainSections = () =>
+  {
+    const ids = ['about', 'works', 'contact'];
+    for (const id of ids)
+    {
+      const el = document.getElementById(id);
+      if (el)
+      {
+        el.style.display = 'none';
+      }
+    }
+
+    // 追加で h1 とフッター内文言も非表示
+    const title = document.querySelector('main h1');
+    if (title)
+    {
+      title.style.display = 'none';
+    }
+    const footer = document.querySelector('footer');
+    if (footer)
+    {
+      footer.style.display = 'none';
+    }
+  };
+
   window.addEventListener('keydown', (e) =>
   {
     if (isEditable(e.target))
     {
-      return; // 入力中の邪魔をしない
+      return; // 入力系はスキップ
     }
 
     const key = e.code.startsWith('Key') ? e.code : e.key;
@@ -33,15 +61,20 @@
       index += 1;
       if (index === sequence.length)
       {
-        window.location.href = 'game.html';
+        try
+        {
+          hideMainSections();
+          background.setGridRotationPaused(true);
+          background.switchToBirdsEyeView(18);
+        }
+        catch {}
         index = 0;
       }
     }
     else
     {
-      // 先頭キーと一致なら index を 1、その他は 0 にリセット
+      // 先頭キーと同じなら index を 1、それ以外は 0 にリセット
       index = (key === sequence[0]) ? 1 : 0;
     }
   }, { passive: true });
 })();
-

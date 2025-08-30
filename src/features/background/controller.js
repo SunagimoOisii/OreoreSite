@@ -24,6 +24,10 @@ class BackgroundController
     this.dummy = new this.THREE.Object3D();
     this.elapsed = 0;
     this.fps = { ...defaults.FPS };
+    this.defaultView = { pos: { x: 0, y: 4.5, z: 10 }, look: { x: 0, y: 0.5, z: 0 }, up: { x: 0, y: 1, z: 0 } };
+    this.currentLook = { x: this.defaultView.look.x, y: this.defaultView.look.y, z: this.defaultView.look.z };
+    this.camAnim = null; // {t,dur,from:{pos,look,up},to:{pos,look,up}}
+    this.gridPaused = false;
 
     const makeStepper = (getHz) =>
     {
@@ -135,7 +139,7 @@ class BackgroundController
   }
   updateGrid(dt)
   {
-    if (!this.grid) return;
+    if (!this.grid || this.gridPaused) return;
     this.gridStep.tick(dt, (step) => { this.grid.rotation.y += 0.015 * step; });
   }
   updateInner(dt)
@@ -169,14 +173,17 @@ class BackgroundController
       {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
-        this.camera.position.set(0, 4.5, 10); this.camera.lookAt(0, 0.5, 0);
+        this.camera.position.set(0, 4.5, 10);
+        this.camera.up.set(0, 1, 0);
+        this.currentLook = { x: 0, y: 0.5, z: 0 };
+        this.camera.lookAt(this.currentLook.x, this.currentLook.y, this.currentLook.z);
         return { scene: this.scene, camera: this.camera };
       },
       init: ({ renderer: r, scene: s }) =>
       {
         this.renderer = r; this.scene = s; this.renderer.shadowMap.enabled = false; this.createGrid(s); this.makeWirePoly(this.currentShape);
       },
-      update: (dt) => { if (prefersReduced) return; this.updatePoly(dt); this.updateGrid(dt); this.updateInner(dt); },
+      update: (dt) => { if (prefersReduced) return; this.updatePoly(dt); this.updateGrid(dt); this.updateInner(dt); this.updateCamera(dt); },
       render: ({ renderer: r, scene: s, camera: c }) => { r.render(s, c); }
     });
     this.appHandle = handle;
@@ -195,26 +202,90 @@ class BackgroundController
   switchToSphereMode() { this.currentShape = (this.currentShape === 'ico') ? 'ring' : 'ico'; this.makeWirePoly(this.currentShape); }
   toggleSphereMode() { this.switchToSphereMode(); }
   setFPS({ poly, inner, grid } = {}) { if (typeof poly === 'number') this.fps.poly = poly; if (typeof inner === 'number') this.fps.inner = inner; if (typeof grid === 'number') this.fps.grid = grid; this.polyStep.reset(); this.gridStep.reset(); this.innerStep.reset(); }
+
+  // ---- Views ----
+  switchToBirdsEyeView(height = 16, durationSec = 0.9)
+  {
+    if (!this.camera) return;
+    const center = { x: 0, y: 1.25, z: 0 };
+    const to = {
+      pos: { x: 0.001, y: height, z: 0.001 },
+      look: { ...center },
+      up: { x: 0, y: 1, z: 0 },
+    };
+    this.animateCameraTo(to, durationSec);
+  }
+
+  resetDefaultView(durationSec = 0.9)
+  {
+    if (!this.camera) return;
+    this.animateCameraTo(this.defaultView, durationSec);
+  }
+
+  animateCameraTo(view, durationSec = 0.9)
+  {
+    if (!this.camera) return;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const dur = Math.max(0.01, durationSec);
+    const from = {
+      pos: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+      look: { x: this.currentLook.x, y: this.currentLook.y, z: this.currentLook.z },
+      up:  { x: this.camera.up.x,       y: this.camera.up.y,       z: this.camera.up.z },
+    };
+    const to = {
+      pos: { x: view.pos.x, y: view.pos.y, z: view.pos.z },
+      look: { x: view.look.x, y: view.look.y, z: view.look.z },
+      up:  { x: view.up.x,   y: view.up.y,   z: view.up.z },
+    };
+    this.camAnim = { t: 0, dur, from, to };
+  }
+
+  updateCamera(dt)
+  {
+    if (!this.camAnim || !this.camera) return;
+    this.camAnim.t += dt;
+    const a = Math.min(1, this.camAnim.t / this.camAnim.dur);
+    // easeInOutCubic
+    const ease = a < 0.5 ? 4 * a * a * a : 1 - Math.pow(-2 * a + 2, 3) / 2;
+    const lerp = (s, e, t) => s + (e - s) * t;
+    const nrm = (x, y, z) => { const l = Math.hypot(x, y, z) || 1; return { x: x / l, y: y / l, z: z / l }; };
+
+    const { from, to } = this.camAnim;
+    const px = lerp(from.pos.x, to.pos.x, ease);
+    const py = lerp(from.pos.y, to.pos.y, ease);
+    const pz = lerp(from.pos.z, to.pos.z, ease);
+    const ux = lerp(from.up.x, to.up.x, ease);
+    const uy = lerp(from.up.y, to.up.y, ease);
+    const uz = lerp(from.up.z, to.up.z, ease);
+    const lx = lerp(from.look.x, to.look.x, ease);
+    const ly = lerp(from.look.y, to.look.y, ease);
+    const lz = lerp(from.look.z, to.look.z, ease);
+
+    const up = nrm(ux, uy, uz);
+    this.camera.position.set(px, py, pz);
+    this.camera.up.set(up.x, up.y, up.z);
+    this.currentLook = { x: lx, y: ly, z: lz };
+    this.camera.lookAt(lx, ly, lz);
+    this.camera.updateProjectionMatrix();
+
+    if (a >= 1) this.camAnim = null;
+  }
+
+  // ---- Grid helpers ----
+  setGridRotationPaused(paused = true)
+  {
+    this.gridPaused = !!paused;
+  }
+
+  pauseGridRotation()
+  {
+    this.setGridRotationPaused(true);
+  }
+
+  resumeGridRotation()
+  {
+    this.setGridRotationPaused(false);
+  }
 }
-
-// 互換レイヤ（既存の関数API）
-let singleton = null;
-let lastThree = THREE_NS;
-function getInstance(THREE) { if (!singleton) singleton = new BackgroundController(THREE || lastThree || THREE_NS); return singleton; }
-
-export function start({ THREE = THREE_NS, canvas, cfg, fps, usePost = true } = {})
-{
-  lastThree = THREE || THREE_NS;
-  try { singleton?.stop?.(); } catch {}
-  singleton = new BackgroundController(lastThree);
-  return singleton.start({ canvas, cfg, fps, usePost });
-}
-
-export function increaseBalls() { getInstance().increaseBalls(); }
-export function decreaseBalls() { getInstance().decreaseBalls(); }
-export function switchToSphereMode() { getInstance().switchToSphereMode(); }
-export const toggleSphereMode = switchToSphereMode;
-export function setBackgroundFPS({ poly, inner, grid } = {}) { getInstance().setFPS({ poly, inner, grid }); }
 
 export { BackgroundController };
-

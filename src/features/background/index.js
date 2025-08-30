@@ -1,14 +1,11 @@
 // src/features/background/index.js
-// Background 機能の公開 API を再エクスポート（バレル化）
+// 背景機能の公開API（互換レイヤ廃止、直接インスタンスを公開）
 
-export {
-  start,
-  increaseBalls,
-  decreaseBalls,
-  switchToSphereMode,
-  toggleSphereMode,
-  setBackgroundFPS,
-} from './controller.js';
-
+export { BackgroundController } from './controller.js';
 export { BackgroundPhysics } from './physics.js';
+
+import { BackgroundController as _BackgroundController } from './controller.js';
+
+// 単純な共有インスタンス（必要に応じてアプリ側で別インスタンスを作成可能）
+export const background = new _BackgroundController();
 
