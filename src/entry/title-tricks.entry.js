@@ -94,7 +94,7 @@ registerTrick(1, () =>
 // 3文字目 N: タブタイトル変更
 registerTrick(2, () =>
 {
-  document.title = 'こんどはデバッガー？';
+  document.title = '君ってデバッガー？';
 });
 
 // 4文字目 A: 画面を暗転+「ビデオ」表示
