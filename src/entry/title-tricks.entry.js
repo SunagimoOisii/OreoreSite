@@ -1,7 +1,7 @@
 // title-tricks.js
 // h1 の文字にトリック（小ネタ）を紐づける仕掛け
 
-import { background } from '@features/background/index.js';
+import { increaseBalls, decreaseBalls, switchToSphereMode } from '@features/background/index.js';
 // 見出しタイトルの各文字に、クリック時の「小ネタ」処理を割り当てます。
 
 const titleElem = document.querySelector('main h1');
@@ -124,13 +124,13 @@ registerTrick(4, () =>
 // 6文字目 I: 背景の玉を増やす
 registerTrick(5, () =>
 {
-  background.increaseBalls();
+  increaseBalls();
 });
 
 // 7文字目 M: 背景の玉を減らす
 registerTrick(6, () =>
 {
-  background.decreaseBalls();
+  decreaseBalls();
 });
 
 // 8文字目 O: h1 以外を 5 秒隠す
@@ -146,7 +146,7 @@ registerTrick(7, () =>
 // 10文字目 O: 背景モード切替
 registerTrick(10, () =>
 {
-  background.switchToSphereMode();
+  switchToSphereMode();
 });
 
 // 13文字目 E: h1 の文字列を一時的に差し替え
