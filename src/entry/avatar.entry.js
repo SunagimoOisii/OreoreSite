@@ -6,6 +6,7 @@ import { GRAPHICS as CONFIG } from "@config/graphics.js";
 import { createThreeApp } from "@core/app.js";
 import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "@features/avatar/index.js";
 import { initBootOverlay } from "@features/boot/overlay.js";
+import { retriggerClass } from "../utils/dom.js";
 
 const canvas = document.getElementById("avatar-canvas");
 
@@ -38,11 +39,7 @@ createThreeApp(THREE, {
     const aboutCard = document.querySelector('.profile');
     function triggerAboutLoadingBar()
     {
-      if (!aboutCard) return;
-      aboutCard.classList.remove('loading');
-      void aboutCard.offsetWidth;
-      aboutCard.classList.add('loading');
-      setTimeout(() => aboutCard.classList.remove('loading'), 1400);
+      retriggerClass(aboutCard, 'loading', 1400);
     }
     shapeButtons.forEach(btn =>
     {
@@ -66,4 +63,3 @@ createThreeApp(THREE, {
   },
   update: (dt) => { if (updater) updater.update(dt); },
 });
-

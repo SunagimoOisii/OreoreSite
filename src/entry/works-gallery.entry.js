@@ -1,6 +1,7 @@
 // works-gallery.js
 // Works: タブUI＋Depth Carousel（3D風の並び）
 import { loadWorks, getList } from '@features/works/index.js';
+import { retriggerClass } from '../utils/dom.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const left = document.querySelector('.arrow-left');
@@ -70,11 +71,7 @@ function ensureCarousel()
 function triggerWorksLoadingBar()
 {
   const center = document.querySelector('.works-carousel .works-content.is-center') || document.querySelector('.works-content');
-  if (!center) return;
-  center.classList.remove('loading');
-  void center.offsetWidth; // reflow
-  center.classList.add('loading');
-  setTimeout(() => center.classList.remove('loading'), 1400);
+  retriggerClass(center, 'loading', 1400);
 }
 
 function getCurrentList()
@@ -216,4 +213,3 @@ function rotateClasses(dir)
     if (next === 0) card.classList.add('is-center');
   });
 }
-

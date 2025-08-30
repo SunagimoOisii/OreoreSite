@@ -51,7 +51,7 @@ export function createThreeApp(THREE, options)
   const post = usePost ? createPostPipeline(THREE, renderer, cfg) : undefined;
 
   // リサイズ設定
-  setupResize(renderer, canvas, camera, cfg, post);
+  const cleanupResize = setupResize(renderer, canvas, camera, cfg, post);
 
   const ctx = { scene, camera, renderer, controls, post };
   const initResult = typeof init === 'function' ? (init(ctx) || {}) : {};
@@ -75,6 +75,7 @@ export function createThreeApp(THREE, options)
 
   function dispose()
   {
+    try { cleanupResize?.(); } catch { /* noop */ }
     try { loop.dispose?.(); } catch { /* noop */ }
     try { initResult.dispose?.(); } catch { /* noop */ }
     try { controls?.dispose?.(); } catch { /* noop */ }

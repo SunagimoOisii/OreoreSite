@@ -68,5 +68,10 @@ export function setupResize(renderer, canvas, camera, cfg, post)
 
   window.addEventListener("resize", onResize);
   onResize();
-}
 
+  // cleanup を返して、dispose 時にリスナーを解除できるようにする
+  return function cleanupResize()
+  {
+    try { window.removeEventListener("resize", onResize); } catch { /* noop */ }
+  };
+}
