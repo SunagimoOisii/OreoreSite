@@ -115,3 +115,24 @@ core      -> 依存なし（外部 three を除く）
 
 ## ライセンス
 - ライセンス表記は `LICENSE` を参照。`license.html` はスタイル調整済みの説明ページです。
+
+## アーキテクチャ（責務の分離）
+- エントリ（`src/entry/*.entry.js`）: ページ起動・DOM結線のみ。機能APIを呼ぶ。
+- 機能（`src/features/*`）: UI/threeロジック本体。`index.js`/`controller.js` から公開。
+- 土台（`src/core/*`）: three 初期化・ループ・リサイズ・操作。
+- 効果（`src/effects/*`）: ポストプロセス・マテリアル等。
+
+## Import Maps の使い方（例）
+`index.html` の `<script type="importmap">` に以下を記述:
+```
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "@core/": "/src/core/",
+    "@features/": "/src/features/",
+    "@effects/": "/src/effects/",
+    "@config/": "/src/config/"
+  }
+}
+```

@@ -1,48 +1,54 @@
-# アーキテクチャ（現状）
+# アーキテクチャ（概要）
 
-three.js を用いた小規模サイト。ページごとに「エントリ（起点）」を置き、機能は `features/*` で提供、コアは `core/*` にまとめる。エフェクトは `effects/*`、スタイルは `styles/*` に配置。
+このサイトは three.js を用いたシンプルなフロントエンド構成です。ページ側に「エントリ（entry）」、機能ロジックは「features」、土台は「core」、描画効果は「effects」に分離しています。Import Maps で `@core/` などの別名を割り当て、可読性を高めています。
 
-本リポジトリは以下を導入済みです。
-- エントリ命名の統一: `*.entry.js`
-- バレル化: `features/*/index.js`, `effects/index.js`
-- 設定の分離: `src/config/graphics.js`
-- Import Maps によるエイリアス: `@core/`, `@features/`, `@effects/`, `@config/`
+- エントリ: `src/entry/*.entry.js`（ページごとの起動コード）
+- 機能: `src/features/*`（UIや三次元処理のまとまり）
+- 土台: `src/core/*`（renderer/scene/loop/controlsなどの共通土台）
+- 効果: `src/effects/*`（ポストプロセス、独自マテリアル等）
+- 設定: `src/config/*`（描画設定）、`src/features/background/config.js`（機能ローカル設定）
 
-## 現状の構成（概要）
+## 依存関係（責務の分離）
 
-- `src/core/`: three.js 共通（`app.js`, `renderer.js`, `scene.js`, `loop.js`, `controls.js`）
-- `src/effects/`: ポストプロセス・マテリアル等（`postprocess.js`, `materials.js`, `psx-jitter.js`, `index.js`）
-- `src/features/`: 機能（`avatar/*`, `background/*`, `boot/overlay.js`, `works/*` など）
-- `src/entry/`: ページ起点（`*.entry.js`）
-- `src/config/`: 設定（`graphics.js`）
-- `src/styles/`: CSS
+- エントリ → 機能 →（必要に応じて）core/effects
+- 機能同士は直接依存しない（共有は index.js などの公開API経由）
+- Import Maps により `@core/*`, `@features/*`, `@effects/*`, `@config/*` を解決
 
-## 命名と依存の方針
+## エントリの責務
 
-- エントリ: `*.entry.js`（例: `background.entry.js`, `avatar.entry.js`）
-- バレル化: 機能の公開面は `index.js` に集約（外部はそれのみを import）
-- 依存方向: `entry -> features -> core/effects`
-- 設定: `@config/graphics.js` を参照
+- DOM から必要な要素を取得し、対応する機能を初期化する
+- ページ固有のイベント結び付け（ボタンやタブなど）
+- ビジネスロジックは持たず、機能APIを呼び出すのみ
 
-## 公開 API の考え方
+## 機能の責務
 
-- UI から呼ぶ副作用系（例: 背景の個数変更、モード切替）は `features/<feature>/index.js` または `controller.js` の公開関数に限定
-- エントリから実装詳細（個別ファイル）を直接 import しない
+- UI操作の具体的な実装・three.js での表現ロジック
+- 公開関数は `features/<name>/index.js` もしくは `controller.js` でエクスポート
+- 例）background: `start()/stop()/setBackgroundFPS()/toggleSphereMode()` など
 
-## Import Maps（エイリアス）
+## core/effects の責務
 
-`index.html` に Import Map を定義済み。
+- core: three.js の初期化・固定ステップループ・リサイズ・操作（OrbitControls）
+- effects: ポストプロセスやマテリアル、PS1風ジッターなどの視覚効果
+
+## Import Maps（例）
+
+`index.html` に以下のような Import Map を記述します。
 
 ```
-"imports": {
-  "@core/": "/src/core/",
-  "@features/": "/src/features/",
-  "@effects/": "/src/effects/",
-  "@config/": "/src/config/"
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "@core/": "/src/core/",
+    "@features/": "/src/features/",
+    "@effects/": "/src/effects/",
+    "@config/": "/src/config/"
+  }
 }
 ```
 
-## ディレクトリ例（現状）
+## ディレクトリ構成
 
 ```
 src/
@@ -62,6 +68,7 @@ src/
   features/
     background/
       controller.js
+      config.js
       physics.js
       index.js
     avatar/
@@ -69,20 +76,24 @@ src/
       update.js
       explode.js
       index.js
-    boot/overlay.js
     works/
       loader.js
+      carousel-util.js
       data.json
       index.js
+    boot/
+      overlay.js
   entry/
     background.entry.js
     avatar.entry.js
     works-gallery.entry.js
     title-tricks.entry.js
     easter-egg.entry.js
+  utils/
+    dom.js
 ```
 
-## 将来の選択肢
+## メモ（背景コントローラ）
 
-- ロケール分割（例: `works/data.ja.json`, `works/data.en.json`）
-- Vite 導入（`resolve.alias` でのエイリアス、最適化ビルド）
+- `features/background/controller.js` はクラス化され、生成/更新/破棄が内部で分離されています
+- 既存の関数APIは互換層で提供（start/stop など）。必要に応じてクラスAPIへ移行可能

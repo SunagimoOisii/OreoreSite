@@ -24,9 +24,9 @@
 
 ## 可読性の向上
 
-- [ ] `doc/architecture.md` の文字化け修正: UTF-8 保存へ移行し、章構成を整理（エントリ→機能→コア→エフェクトの依存を図示）
+- [x] `doc/architecture.md` の文字化け修正: UTF-8 保存へ移行し、章構成を整理（エントリ→機能→コア→エフェクトの依存を図示）
 - [x] Entry スクリプトに JSDoc 追加: 主要なハンドラ（クリック、Carousel 更新）に一行コメントを補足
-- [ ] README の補足: Import Maps の使い方、`*.entry.js` と `features/*` の責務分離を図解で追記
+- [x] README の補足: Import Maps の使い方、`*.entry.js` と `features/*` の責務分離を図解で追記
 
 ## 追加で検討（任意）
 
