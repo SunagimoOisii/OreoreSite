@@ -10,6 +10,9 @@ import { retriggerClass } from "../utils/dom.js";
 
 const canvas = document.getElementById("avatar-canvas");
 
+// constants (avoid magic numbers)
+const ABOUT_LOADING_MS = 1400;
+
 // 初期化時に必要なハンドル
 let explosion, updater, avatarMesh, baseSize;
 
@@ -39,7 +42,7 @@ createThreeApp(THREE, {
     const aboutCard = document.querySelector('.profile');
     function triggerAboutLoadingBar()
     {
-      retriggerClass(aboutCard, 'loading', 1400);
+      retriggerClass(aboutCard, 'loading', ABOUT_LOADING_MS);
     }
     shapeButtons.forEach(btn =>
     {

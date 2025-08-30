@@ -19,8 +19,7 @@ const SLOTS = 5; // [-2,-1,0,1,2]
 let carousel;       // .works-carousel
 let cards = [];     // Array<.works-content>
 let animating = false;
-
-function buildCard()
+\n/** Build a works card element (.works-content). */\nfunction buildCard()
 {
   const card = document.createElement('div');
   card.className = 'works-content';
@@ -79,19 +78,17 @@ function ensureCarousel()
     if (off === 0) card.classList.add('is-center');
   });
 }
-
-function triggerWorksLoadingBar()
+\n/** Retrigger center card loading bar animation. */\nfunction triggerWorksLoadingBar()
 {
   const center = document.querySelector('.works-carousel .works-content.is-center') || document.querySelector('.works-content');
-  retriggerClass(center, 'loading', 1400);
+  retriggerClass(center, 'loading', WORKS_LOADING_MS);
 }
 
 function getCurrentList()
 {
   return getList(currentLang, currentCategory);
 }
-
-function render()
+\n/** Render current carousel cards based on lang/category and index. */\nfunction render()
 {
   setupCarousel();
   const list = getCurrentList();
@@ -163,8 +160,7 @@ tabs.forEach((btn) =>
     triggerWorksLoadingBar();
   });
 });
-
-function changeIndex(delta)
+\n/** Rotate carousel by delta steps (positive: right, negative: left). */\nfunction changeIndex(delta)
 {
   const list = getCurrentList();
   if (list.length === 0 || animating) return;
@@ -186,7 +182,7 @@ function changeIndex(delta)
         stepOnce();
       else
         animating = false;
-    }, 320); // CSSのtransitionに合わせる
+    } , CAROUSEL_STEP_MS); // CSSのtransitionに合わせる
   };
   stepOnce();
 }
@@ -225,3 +221,5 @@ function rotateClasses(dir)
     if (next === 0) card.classList.add('is-center');
   });
 }
+
+
