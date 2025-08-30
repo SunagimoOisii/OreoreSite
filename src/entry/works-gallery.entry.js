@@ -1,6 +1,7 @@
 // works-gallery.js
 // Works: タブUI（奥行きカルーセル）
 import { loadWorks, getList } from '@features/works/index.js';
+// Works のタブ切替とカルーセル表示を管理するエントリ。
 import { retriggerClass } from '../utils/dom.js';
 import { ensureCarousel as ensureCarouselUtil, getOffset as getCardOffset, rotateClasses as rotateClassesUtil } from '@features/works/carousel-util.js';
 
@@ -25,6 +26,10 @@ let cards = [];     // Array<.works-content>
 let animating = false;
 
 /** Works のカード要素（.works-content）を構築 */
+/**
+ * Works のカード要素(.works-content)を1枚生成する。
+ * 画像と説明リストを子に持つプレーンな要素を返す。
+ */
 function buildCard()
 {
   const card = document.createElement('div');
@@ -41,6 +46,7 @@ function buildCard()
 }
 
 // 機能内ユーティリティでカルーセルを初期化
+// ページ内の要素からカルーセル用DOMを確保/作成する
 function setupCarousel()
 {
   if (!worksView) return;
@@ -52,6 +58,9 @@ function setupCarousel()
 }
 
 /** 中央カードのローディングバー演出を再トリガ */
+/**
+ * 中央カードにローディングバーのアニメーションを付与する。
+ */
 function triggerWorksLoadingBar()
 {
   const center = document.querySelector('.works-carousel .works-content.is-center') || document.querySelector('.works-content');
@@ -64,6 +73,10 @@ function getCurrentList()
 }
 
 /** 言語/カテゴリとインデックスに基づいて描画 */
+/**
+ * 言語/カテゴリとインデックスに合わせてカルーセルを描画する。
+ * 高さの自動調整と aria-hidden の更新も行う。
+ */
 function render()
 {
   setupCarousel();
@@ -136,6 +149,10 @@ tabs.forEach((btn) =>
 });
 
 /** カルーセルを delta だけ回転（正=右、負=左） */
+/**
+ * カルーセルのインデックスを delta ぶん回転させる。
+ * dir=+1で右、-1で左。アニメーション中は無視。
+ */
 function changeIndex(delta)
 {
   const list = getCurrentList();

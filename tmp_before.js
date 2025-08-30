@@ -2,7 +2,6 @@
 // h1 の文字にトリック（小ネタ）を紐づける仕掛け
 
 import { increaseBalls, decreaseBalls, switchToSphereMode } from '@features/background/index.js';
-// 見出しタイトルの各文字に、クリック時の「小ネタ」処理を割り当てます。
 
 const titleElem = document.querySelector('main h1');
 const text = titleElem.textContent;
@@ -21,18 +20,24 @@ const charElems = [...text].map((ch, index) =>
 
 // 登録されたトリックを管理するマップ
 const tricks = new Map();
-/**
- * 指定した文字インデックスにクリック時の処理を登録する。
- * @param {number} index 対象文字のインデックス
- * @param {() => void} handler クリック時に呼ばれる処理
- */
 
 export function registerTrick(index, handler)
 {
   tricks.set(index, handler);
 }
 
-// 未使用の registerTrickByChar は削除（必要になれば復活させる）
+export function registerTrickByChar(char, handler)
+{
+  const target = (char === ' ' ? '\\u00A0' : char);
+  charElems.forEach((el) =>
+  {
+    if (el.textContent === target)
+    {
+      const idx = Number(el.dataset.index);
+      tricks.set(idx, handler);
+    }
+  });
+}
 
 // クリックされた文字に対応するトリックを実行
 titleElem.addEventListener('click', (e) =>
@@ -163,3 +168,5 @@ registerTrick(13, () =>
     });
   }, 5000);
 });
+
+

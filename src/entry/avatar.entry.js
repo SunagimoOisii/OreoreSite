@@ -7,10 +7,11 @@ import { createThreeApp } from "@core/app.js";
 import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "@features/avatar/index.js";
 import { initBootOverlay } from "@features/boot/overlay.js";
 import { retriggerClass } from "../utils/dom.js";
+// three.js でアバターを描画し、UI と簡単なインタラクションを結び付けるエントリ。
 
 const canvas = document.getElementById("avatar-canvas");
 
-// constants (avoid magic numbers)
+// 定数（マジックナンバーを避ける）
 const ABOUT_LOADING_MS = 1400;
 
 // 初期化時に必要なハンドル
@@ -40,6 +41,9 @@ createThreeApp(THREE, {
     // UI バインド（形状ボタンとクリック反応）
     const shapeButtons = document.querySelectorAll(".avatar-shapes button");
     const aboutCard = document.querySelector('.profile');
+    /**
+     * プロフィールカードにローディング風の進捗バーを再適用する。
+     */
     function triggerAboutLoadingBar()
     {
       retriggerClass(aboutCard, 'loading', ABOUT_LOADING_MS);
