@@ -2,6 +2,7 @@
 // Works: タブUI＋Depth Carousel（3D風の並び）
 import { loadWorks, getList } from '@features/works/index.js';
 import { retriggerClass } from '../utils/dom.js';
+import { ensureCarousel as ensureCarouselUtil, getOffset as getCardOffset, rotateClasses as rotateClassesUtil } from '@features/works/carousel-util.js';
 
 const tabs = document.querySelectorAll('.works-tabs button');
 const left = document.querySelector('.arrow-left');
@@ -32,6 +33,17 @@ function buildCard()
   card.appendChild(imgWrap);
   card.appendChild(ul);
   return card;
+}
+
+// 機能内ユーティリティを用いたセットアップ
+function setupCarousel()
+{
+  if (!worksView) return;
+  if (carousel) return;
+  const currentCard = document.querySelector('.works-content');
+  const res = ensureCarouselUtil(worksView, right, currentCard, SLOTS, buildCard);
+  carousel = res.carousel;
+  cards = res.cards;
 }
 
 function ensureCarousel()
@@ -81,7 +93,7 @@ function getCurrentList()
 
 function render()
 {
-  ensureCarousel();
+  setupCarousel();
   const list = getCurrentList();
   if (!carousel || list.length === 0)
   {
@@ -99,7 +111,7 @@ function render()
   // 現在の各カードへoffsetクラスに合わせてコンテンツを更新
   cards.forEach((card) =>
   {
-    const off = getOffset(card);
+    const off = getCardOffset(card);
     if (off == null) return;
     const itemIdx = (index + off + list.length) % list.length;
     const item = list[itemIdx];
@@ -163,7 +175,7 @@ function changeIndex(delta)
   let done = 0;
   const stepOnce = () =>
   {
-    rotateClasses(dir);
+    rotateClassesUtil(cards, dir);
     // アニメ終了にインデックスを更新して中身をリフレッシュ
     setTimeout(() =>
     {

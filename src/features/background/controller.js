@@ -1,18 +1,17 @@
 // src/features/background/controller.js
-// 背景機能のコントローラ: three.js の初期化と更新ループ、
-// UI から操作するための公開 API をここに集約します。
+// 背景機能のコントローラ（three.js 初期化・更新・簡易API）
 
 import * as THREE_NS from 'three';
 import { createThreeApp } from '@core/app.js';
 
-// 内部状態（モジュールスコープ）
+// モジュールスコープの状態
 let appHandle = null;
 let lastThree = THREE_NS;
 let scene, camera, renderer;
 let grid;
 let polyGroup;
 let currentShape = 'ico';
-let inst;                // 内側のオブジェクト用 InstancedMesh
+let inst;                // InstancedMesh（内側の小キューブ）
 let instCount = 24;
 const INST_MAX = 120;
 const seeds = [];
@@ -20,12 +19,12 @@ const dummy = new THREE_NS.Object3D();
 let elapsed = 0;
 const INNER_Y_OFFSET = 1.0;
 
-// FPS（サブシステムごとの更新レート）
-let POLY_FPS = 20;   // ワイヤーフレーム形状の回転
-let GRID_FPS = 24;   // グリッドの回転
-let INNER_FPS = 15;  // 内側 Instanced の移動
+// 更新レート(Hz)
+let POLY_FPS = 20;
+let GRID_FPS = 24;
+let INNER_FPS = 15;
 
-// 固定ステップ処理用アキュムレータ
+// 汎用ステッパ（ローカルのみ・外部公開しない）
 function makeStepper(getHz)
 {
   let acc = 0;
@@ -33,7 +32,7 @@ function makeStepper(getHz)
     tick(dt, onStep)
     {
       const hz = getHz?.() ?? 0;
-      if (!(hz > 0)) return; // 0 以下は停止
+      if (!(hz > 0)) return;
       const step = 1 / hz;
       acc += dt;
       while (acc >= step)
@@ -45,9 +44,8 @@ function makeStepper(getHz)
     reset() { acc = 0; }
   };
 }
-
 const polyStep = makeStepper(() => POLY_FPS);
-const gridStep = makeStepper(() => GRID_FPS);
+const gridStep  = makeStepper(() => GRID_FPS);
 const innerStep = makeStepper(() => INNER_FPS);
 
 function disposeObject(obj)
@@ -60,7 +58,15 @@ function disposeObject(obj)
   });
 }
 
-// 内側の Instanced オブジェクト群を生成（初回のみ）
+function disposeSceneObjects()
+{
+  try { if (polyGroup) { polyGroup.parent?.remove(polyGroup); disposeObject(polyGroup); } } catch {}
+  try { if (grid)      { grid.parent?.remove(grid);       disposeObject(grid); } } catch {}
+  try { if (inst)      { inst.parent?.remove(inst);       disposeObject(inst); } } catch {}
+  polyGroup = undefined; grid = undefined; inst = undefined;
+}
+
+// 内側 Instanced を必要時に生成（初回のみ）
 function ensureInnerObjects(THREE)
 {
   if (inst) return;
@@ -84,7 +90,7 @@ function ensureInnerObjects(THREE)
   }
 }
 
-// 外側のワイヤーフレーム形状を生成・差し替え
+// 外側ワイヤーポリゴンの生成と差し替え
 function makeWirePoly(THREE, shape = 'ico')
 {
   if (polyGroup)
@@ -117,8 +123,7 @@ function makeWirePoly(THREE, shape = 'ico')
     const ring1 = new THREE.LineLoop(geo, mat);
     const ring2 = new THREE.LineLoop(geo, mat);
     ring2.rotation.x = Math.PI / 2;
-    obj = new THREE.Group();
-    obj.add(ring1, ring2);
+    obj = new THREE.Group(); obj.add(ring1, ring2);
   }
   else
   {
@@ -139,23 +144,59 @@ function makeWirePoly(THREE, shape = 'ico')
   ensureInnerObjects(THREE);
 }
 
-/**
- * 背景シーンを開始します。
- * @param {Object} opts
- * @param {typeof import('three')} opts.THREE three モジュール
- * @param {HTMLCanvasElement} opts.canvas 描画先キャンバス
- * @param {object} opts.cfg グラフィクス系設定
- * @param {{poly?:number,grid?:number,inner?:number}} [opts.fps] 各サブ系の更新レート(Hz)
- * @param {boolean} [opts.usePost=true] ポストプロセスを有効化
- */
+function createGrid(THREE, s)
+{
+  grid = new THREE.GridHelper(120, 80, 0x335555, 0x224444);
+  const mats = Array.isArray(grid.material) ? grid.material : [grid.material];
+  mats.forEach((m) => { m.opacity = 0.28; m.transparent = true; });
+  grid.position.y = -2.0; s.add(grid);
+}
+
+function updatePoly(dt)
+{
+  if (!polyGroup) return;
+  polyStep.tick(dt, (step) =>
+  {
+    polyGroup.rotation.y += 0.18 * step;
+    polyGroup.rotation.x += 0.05 * step;
+  });
+}
+
+function updateGrid(dt)
+{
+  if (!grid) return;
+  gridStep.tick(dt, (step) => { grid.rotation.y += 0.015 * step; });
+}
+
+function updateInner(dt)
+{
+  if (!inst) return;
+  let updated = false;
+  innerStep.tick(dt, (step) => { elapsed += step; updated = true; });
+  if (!updated) return;
+  const limitR = (currentShape === 'ico') ? 0.8 : 0.65;
+  for (let i = 0; i < inst.count; i++)
+  {
+    const s = seeds[i];
+    const a = s.a0 + elapsed * s.sa;
+    const b = s.b0 + elapsed * s.sb;
+    const r = s.r0 + Math.sin(elapsed * 0.8 + i) * s.rr;
+    const cr = Math.min(limitR, Math.max(0.4, r));
+    const x = cr * Math.sin(b) * Math.cos(a);
+    const y = cr * Math.cos(b) * 0.6 + INNER_Y_OFFSET;
+    const z = cr * Math.sin(b) * Math.sin(a);
+    dummy.position.set(x, y, z);
+    dummy.rotation.set(a * 0.5, b * 0.5, (a + b) * 0.25);
+    dummy.updateMatrix();
+    inst.setMatrixAt(i, dummy.matrix);
+  }
+  inst.instanceMatrix.needsUpdate = true;
+}
+
 export function start({ THREE = THREE_NS, canvas, cfg, fps, usePost = true } = {})
 {
-  if (!canvas) {
-    console.warn('[background] canvas not found');
-    return { stop() {} };
-  }
-  if (fps)
-    setBackgroundFPS(fps);
+  if (!canvas) { console.warn('[background] canvas not found'); return { stop() {} }; }
+  if (fps) setBackgroundFPS(fps);
   lastThree = THREE;
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -179,76 +220,21 @@ export function start({ THREE = THREE_NS, canvas, cfg, fps, usePost = true } = {
     {
       renderer = r; scene = s;
       renderer.shadowMap.enabled = false;
-
-      // 床グリッド
-      grid = new THREE.GridHelper(120, 80, 0x335555, 0x224444);
-      const mats = Array.isArray(grid.material) ? grid.material : [grid.material];
-      mats.forEach((m) => { m.opacity = 0.28; m.transparent = true; });
-      grid.position.y = -2.0;
-      s.add(grid);
-
+      createGrid(THREE, s);
       makeWirePoly(THREE, currentShape);
     },
     update: (dt) =>
     {
       if (prefersReduced) return;
-
-      // ワイヤーフレームの回転更新
-      if (polyGroup)
-      {
-        polyStep.tick(dt, (step) =>
-        {
-          polyGroup.rotation.y += 0.18 * step;
-          polyGroup.rotation.x += 0.05 * step;
-        });
-      }
-
-      // グリッドの回転更新
-      if (grid)
-      {
-        gridStep.tick(dt, (step) =>
-        {
-          grid.rotation.y += 0.015 * step;
-        });
-      }
-
-      // 内側 Instanced の位置更新
-      if (inst)
-      {
-        let updated = false;
-        innerStep.tick(dt, (step) => { elapsed += step; updated = true; });
-        if (updated)
-        {
-          const limitR = (currentShape === 'ico') ? 0.8 : 0.65;
-          for (let i = 0; i < inst.count; i++)
-          {
-            const s = seeds[i];
-            const a = s.a0 + elapsed * s.sa;
-            const b = s.b0 + elapsed * s.sb;
-            const r = s.r0 + Math.sin(elapsed * 0.8 + i) * s.rr;
-
-            const cr = Math.min(limitR, Math.max(0.4, r));
-            const x = cr * Math.sin(b) * Math.cos(a);
-            const y = cr * Math.cos(b) * 0.6 + INNER_Y_OFFSET;
-            const z = cr * Math.sin(b) * Math.sin(a);
-
-            dummy.position.set(x, y, z);
-            dummy.rotation.set(a * 0.5, b * 0.5, (a + b) * 0.25);
-            dummy.updateMatrix();
-            inst.setMatrixAt(i, dummy.matrix);
-          }
-          inst.instanceMatrix.needsUpdate = true;
-        }
-      }
+      updatePoly(dt);
+      updateGrid(dt);
+      updateInner(dt);
     },
-    render: ({ renderer: r, scene: s, camera: c }) =>
-    {
-      r.render(s, c);
-    }
+    render: ({ renderer: r, scene: s, camera: c }) => { r.render(s, c); }
   });
 
   appHandle = handle;
-  return { stop: () => { try { appHandle?.dispose?.(); } catch {} } };
+  return { stop: () => { try { appHandle?.dispose?.(); } catch {} try { disposeSceneObjects(); } catch {} } };
 }
 
 export function increaseBalls()
@@ -270,19 +256,13 @@ export function switchToSphereMode()
   currentShape = (currentShape === 'ico') ? 'ring' : 'ico';
   makeWirePoly(lastThree, currentShape);
 }
-
-// 互換エイリアス（ドキュメント側の表記に合わせる）
 export const toggleSphereMode = switchToSphereMode;
 
-/**
- * 背景の更新レートを設定します。0 以下で各サブシステムを停止。
- */
 export function setBackgroundFPS({ poly, inner, grid } = {})
 {
   if (typeof poly === 'number') POLY_FPS = poly;
   if (typeof inner === 'number') INNER_FPS = inner;
   if (typeof grid === 'number') GRID_FPS = grid;
-  polyStep.reset();
-  gridStep.reset();
-  innerStep.reset();
+  polyStep.reset(); gridStep.reset(); innerStep.reset();
 }
+

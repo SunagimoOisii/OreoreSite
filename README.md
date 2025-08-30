@@ -5,12 +5,16 @@
 > - utils: `retriggerClass()` 追加。`avatar.entry.js` と `works-gallery.entry.js` のCSS再トリガを共通化
 > - background: `controller.js` にローカルFPSステッパ導入（POLY/GRID/INNERの更新を簡潔化）
 > - works: ローダのフォールバックを定数化（`EMPTY_WORKS/EMPTY_LANG`）し重複排除
+> - works: Carouselユーティリティを機能内に切り出し（クラス回転・初期配置の重複を排除）
+> - background: 生成/更新/破棄の内部関数化で関心分離（`createGrid/update*/dispose`）
 
 ### 今回のメリット
 - ライフサイクル安全性: リサイズリスナーの解除で多重登録・メモリリークを予防
 - 重複削減: 同型のCSS再トリガ/フォールバック定義の一本化で変更点が明確に
 - 可読性向上: FPSステッパ導入により更新ループの意図が明瞭、バグ混入余地を減少
 - 将来拡張に強い: 設定の一元化・小粒度ユーティリティで段階的な機能追加が容易
+ - UI保守性: Carouselの初期化/回転がユーティリティ化され、DOMやCSS変更に追従しやすい
+ - ライフサイクルの明確化: 背景の生成/更新/破棄が分離され、停止時の後始末が確実
 
 three.js を使ったフロントエンドのデモ兼ポートフォリオサイトです。開発はビルドレス（Import Maps）で動作し、エイリアスでパスを短縮しています。
 
