@@ -2,6 +2,8 @@
 // works データの JSON を読み込み、UI から参照しやすい API を提供
 
 let _data = null;
+const EMPTY_LANG = Object.freeze({ game: [], tool: [], other: [] });
+const EMPTY_WORKS = Object.freeze({ ja: EMPTY_LANG });
 
 /**
  * 読み込んだ JSON をざっくり検証し、期待形でなければ false を返す。
@@ -45,7 +47,7 @@ export async function loadWorks(url = './src/features/works/data.json')
   if (!res.ok)
   {
     console.warn('[works] データの取得に失敗:', res.status, res.statusText);
-    _data = { ja: { game: [], tool: [], other: [] } };
+    _data = EMPTY_WORKS;
     return;
   }
   try
@@ -56,13 +58,13 @@ export async function loadWorks(url = './src/features/works/data.json')
     else
     {
       console.warn('[works] JSON 構造が不正なためフォールバックします');
-      _data = { ja: { game: [], tool: [], other: [] } };
+      _data = EMPTY_WORKS;
     }
   }
   catch (e)
   {
     console.error('[works] JSON のパースに失敗:', e);
-    _data = { ja: { game: [], tool: [], other: [] } };
+    _data = EMPTY_WORKS;
   }
 }
 
@@ -72,8 +74,8 @@ export async function loadWorks(url = './src/features/works/data.json')
  */
 export function getLang(lang = 'ja')
 {
-  if (!_data) return { game: [], tool: [], other: [] };
-  return _data[lang] || _data.ja || { game: [], tool: [], other: [] };
+  if (!_data) return EMPTY_LANG;
+  return _data[lang] || _data.ja || EMPTY_LANG;
 }
 
 /**

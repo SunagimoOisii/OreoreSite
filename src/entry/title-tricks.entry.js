@@ -158,7 +158,7 @@ registerTrick(10, () =>
 registerTrick(13, () =>
 {
   const original = [...charElems];
-  titleElem.textContent = '秘密はまだない';
+  titleElem.textContent = 'ネタがもうない';
   setTimeout(() =>
   {
     titleElem.textContent = '';

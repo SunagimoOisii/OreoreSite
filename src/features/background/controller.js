@@ -26,9 +26,29 @@ let GRID_FPS = 24;   // グリッドの回転
 let INNER_FPS = 15;  // 内側 Instanced の移動
 
 // 固定ステップ処理用アキュムレータ
-let accPoly = 0;
-let accGrid = 0;
-let accInner = 0;
+function makeStepper(getHz)
+{
+  let acc = 0;
+  return {
+    tick(dt, onStep)
+    {
+      const hz = getHz?.() ?? 0;
+      if (!(hz > 0)) return; // 0 以下は停止
+      const step = 1 / hz;
+      acc += dt;
+      while (acc >= step)
+      {
+        onStep(step);
+        acc -= step;
+      }
+    },
+    reset() { acc = 0; }
+  };
+}
+
+const polyStep = makeStepper(() => POLY_FPS);
+const gridStep = makeStepper(() => GRID_FPS);
+const innerStep = makeStepper(() => INNER_FPS);
 
 function disposeObject(obj)
 {
@@ -174,42 +194,29 @@ export function start({ THREE = THREE_NS, canvas, cfg, fps, usePost = true } = {
       if (prefersReduced) return;
 
       // ワイヤーフレームの回転更新
-      if (polyGroup && POLY_FPS !== 0)
+      if (polyGroup)
       {
-        const step = (POLY_FPS && POLY_FPS > 0) ? (1 / POLY_FPS) : dt;
-        accPoly += dt;
-        while (accPoly >= step)
+        polyStep.tick(dt, (step) =>
         {
           polyGroup.rotation.y += 0.18 * step;
           polyGroup.rotation.x += 0.05 * step;
-          accPoly -= step;
-        }
+        });
       }
 
       // グリッドの回転更新
-      if (grid && GRID_FPS !== 0)
+      if (grid)
       {
-        const step = (GRID_FPS && GRID_FPS > 0) ? (1 / GRID_FPS) : dt;
-        accGrid += dt;
-        while (accGrid >= step)
+        gridStep.tick(dt, (step) =>
         {
           grid.rotation.y += 0.015 * step;
-          accGrid -= step;
-        }
+        });
       }
 
       // 内側 Instanced の位置更新
-      if (inst && INNER_FPS !== 0)
+      if (inst)
       {
-        const step = (INNER_FPS && INNER_FPS > 0) ? (1 / INNER_FPS) : dt;
-        accInner += dt;
         let updated = false;
-        while (accInner >= step)
-        {
-          elapsed += step;
-          updated = true;
-          accInner -= step;
-        }
+        innerStep.tick(dt, (step) => { elapsed += step; updated = true; });
         if (updated)
         {
           const limitR = (currentShape === 'ico') ? 0.8 : 0.65;
@@ -275,5 +282,7 @@ export function setBackgroundFPS({ poly, inner, grid } = {})
   if (typeof poly === 'number') POLY_FPS = poly;
   if (typeof inner === 'number') INNER_FPS = inner;
   if (typeof grid === 'number') GRID_FPS = grid;
-  accPoly = accGrid = accInner = 0;
+  polyStep.reset();
+  gridStep.reset();
+  innerStep.reset();
 }

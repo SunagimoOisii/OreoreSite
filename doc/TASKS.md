@@ -4,11 +4,11 @@
 
 ## 重複の削減
 
-- [ ] CSS アニメ再トリガの共通化（小粒度）: `retriggerClass(el, className, durationMs)` を `src/utils/dom.js` に追加し、次を置き換える（他機能への横展開はしない）
+- [x] CSS アニメ再トリガの共通化（小粒度）: `retriggerClass(el, className, durationMs)` を `src/utils/dom.js` に追加し、次を置き換える（他機能への横展開はしない）
   - `src/entry/avatar.entry.js` の `triggerAboutLoadingBar()`
   - `src/entry/works-gallery.entry.js` の `triggerWorksLoadingBar()`
 - [ ] Carousel のクラス回転ロジック共通化（Works機能専用）: 位置クラス配列や付け替えを `src/features/works/carousel-util.js` に切り出し、`getOffset/rotateClasses` を置き換え（他機能へは流用しない）
-- [ ] 固定ステップ実行の小ヘルパ: 3 つの FPS アキュムレータを「背景コントローラ内ローカル関数」で置換（`makeStepper(targetHz, fn)` などを `controller.js` 内部に実装し、外部には公開しない）
+- [x] 固定ステップ実行の小ヘルパ: 3 つの FPS アキュムレータを「背景コントローラ内ローカル関数」で置換（`makeStepper(targetHz, fn)` などを `controller.js` 内部に実装し、外部には公開しない）
 
 ## 拡張性の向上
 
@@ -17,8 +17,8 @@
 
 ## 保守性の改善
 
-- [ ] リサイズリスナーのクリーンアップ: `src/core/renderer.js` の `setupResize(...)` を cleanup 関数を返す形に変更し、`src/core/app.js` の `dispose()` で解除する
-- [ ] Works ローダの空データ定数化: `src/features/works/loader.js` のフォールバック `{ ja: { game:[], tool:[], other:[] } }` を定数にして重複を排除、型（JSDoc）を明確化
+- [x] リサイズリスナーのクリーンアップ: `src/core/renderer.js` の `setupResize(...)` を cleanup 関数を返す形に変更し、`src/core/app.js` の `dispose()` で解除する
+- [x] Works ローダの空データ定数化: `src/features/works/loader.js` のフォールバック `{ ja: { game:[], tool:[], other:[] } }` を定数にして重複を排除、型（JSDoc）を明確化
 - [ ] `background/controller.js` の関心分離: 生成（ジオメトリ/マテリアル）、更新（回転/グリッド/インナー）、破棄（dispose）を関数に分割
 - [ ] マジックナンバーの定数化: CSS 遷移時間（例: 320ms, 1400ms）、ジオメトリ半径等を定数にまとめる
 
