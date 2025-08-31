@@ -103,8 +103,10 @@ registerTrick(9, () =>
   const count = 100;
   const interval = 25; // 1つ出すごとの間隔（ms）
 
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => {
+  for (let i = 0; i < count; i++) 
+  {
+    setTimeout(() => 
+    {
       const house = document.createElement('span');
       house.className = 'house';
       house.textContent = emojis[Math.floor(Math.random() * emojis.length)];
@@ -114,7 +116,8 @@ registerTrick(9, () =>
       document.body.appendChild(house);
 
       // 3秒後に削除
-      setTimeout(() => {
+      setTimeout(() => 
+      {
         house.remove();
       }, 3000);
     }, i * interval);
