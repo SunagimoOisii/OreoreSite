@@ -15,3 +15,12 @@ setBackgroundFPS({ poly: 20, grid: 24, inner: 15 });
 
 startBackground({ THREE, canvas, cfg, usePost: true });
 
+// Global kill switch: disable retro (PS1-style) effects
+window.addEventListener('disable-retro', () =>
+{
+  const canvas2 = document.getElementById('bg-canvas');
+  if (!canvas2) return;
+  const cfgOff = { ...CONFIG, PS1_MODE: false, CA_ENABLED: false };
+  try { startBackground({ THREE, canvas: canvas2, cfg: cfgOff, usePost: false }); } catch {}
+});
+

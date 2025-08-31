@@ -185,3 +185,7 @@
       rgba(0,0,0,0.30) 100%
     );
 }
+
+/* Retro kill switch: disable CRT overlay and pixelated look */
+body.no-ps1 .avatar-crt::after { display: none; }
+body.no-ps1 #avatar-canvas { image-rendering: auto !important; }

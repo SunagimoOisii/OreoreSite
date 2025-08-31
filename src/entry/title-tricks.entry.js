@@ -163,3 +163,12 @@ registerTrick(13, () =>
     });
   }, 5000);
 });
+
+// 11文字目 U: レトロ風（PS1風）エフェクトを全無効化
+registerTrick(11, () =>
+{
+  // グローバルイベントを発火（他エントリでフック可能に）
+  try { window.dispatchEvent(new CustomEvent('disable-retro')); } catch {}
+  // 視覚オーバーレイ等をCSSで殺す
+  document.body.classList.add('no-ps1');
+});

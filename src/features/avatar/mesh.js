@@ -7,22 +7,45 @@ import { makeAffineMaterial, makePerspMaterial } from "../../effects/index.js";
  * 初期ボックス形状＋テクスチャ付きマテリアルでアバターメッシュを生成します。
  * @returns {{mesh: import('three').Mesh, baseSize:number, texture: import('three').Texture}}
  */
-export function createAvatarMesh(THREE, cfg)
+export function createAvatarMesh(THREE, cfg, existingTexture)
 {
   const baseSize = 2.25;
   const geo = new THREE.BoxGeometry(baseSize, baseSize, baseSize);
 
-  const tex = new THREE.TextureLoader().load("img/me.jpg", t =>
+  let tex = existingTexture;
+  if (!tex)
   {
-    t.colorSpace = THREE.SRGBColorSpace;
+    tex = new THREE.TextureLoader().load("img/me.jpg", t =>
+    {
+      t.colorSpace = THREE.SRGBColorSpace;
+      if (cfg.PS1_MODE)
+      {
+        t.generateMipmaps = false;
+        t.minFilter = THREE.NearestFilter;
+        t.magFilter = THREE.NearestFilter;
+        t.anisotropy = 0;
+      }
+    });
+  }
+  else
+  {
+    tex.colorSpace = THREE.SRGBColorSpace;
     if (cfg.PS1_MODE)
     {
-      t.generateMipmaps = false;
-      t.minFilter = THREE.NearestFilter;
-      t.magFilter = THREE.NearestFilter;
-      t.anisotropy = 0;
+      tex.generateMipmaps = false;
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.anisotropy = 0;
     }
-  });
+    else
+    {
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
+      tex.anisotropy = 0;
+    }
+    tex.needsUpdate = true;
+  }
 
   const mat = cfg.PS1_MODE
     ? makeAffineMaterial(THREE, tex, cfg.AFFINE_STRENGTH, false)
