@@ -29,6 +29,17 @@ body
   color: var(--text);
 }
 
+/* ===============================
+   Cross-Effect CSS Policy (retro OFF)
+   =============================== */
+body.no-ps1 { image-rendering: auto; }
+body.no-ps1 #bg-canvas,
+body.no-ps1 #avatar-canvas { image-rendering: auto !important; }
+/* アバターCRTオーバーレイ/走査線など視覚効果を抑止 */
+body.no-ps1 .avatar-crt::after { display: none !important; }
+/* 万一、起動オーバーレイが残っていても効果系を無効 */
+body.no-ps1 .boot-scanlines { display: none !important; }
+
 #mobile-warning
 {
   display: none;

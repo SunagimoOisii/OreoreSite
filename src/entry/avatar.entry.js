@@ -6,6 +6,7 @@ import { GRAPHICS as CONFIG } from "@config/graphics.js";
 import { createThreeApp } from "@core/app.js";
 import { createAvatarMesh, changeAvatarShape, createAvatarExplosion, createAvatarUpdater } from "@features/avatar/index.js";
 import { initBootOverlay } from "@features/boot/overlay.js";
+import { onRetroChanged, getRetroEnabled } from "@core/state.js";
 import { retriggerClass } from "../utils/dom.js";
 
 // three.js でアバターを描画し、UI と簡単なインタラクションを結び付けるエントリ。
@@ -19,7 +20,6 @@ let appHandle = null;
 let explosion, updater, avatarMesh, baseSize, avatarTexture;
 let bootInitialized = false;
 let uiBound = false;
-let retroDisabledOnce = false;
 
 function bindUIOnce()
 {
@@ -102,10 +102,9 @@ function launchAvatar(ps1Enabled)
 launchAvatar(!!CONFIG.PS1_MODE);
 
 // レトロ効果の全無効化イベントで再初期化（ポストプロセス含む完全OFF）
-window.addEventListener('disable-retro', () =>
+// Retro状態の変化でアバターを再初期化
+onRetroChanged((enabled) =>
 {
-  if (retroDisabledOnce) return;
-  retroDisabledOnce = true;
-  document.body.classList.add('no-ps1');
-  launchAvatar(false);
+  if (!enabled) document.body.classList.add('no-ps1');
+  launchAvatar(!!enabled);
 });

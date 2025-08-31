@@ -24,6 +24,9 @@ class BackgroundController
     this.dummy = new this.THREE.Object3D();
     this.elapsed = 0;
     this.fps = { ...defaults.FPS };
+    this.lastCanvas = null;
+    this.lastCfg = null;
+    this.lastUsePost = true;
 
     const makeStepper = (getHz) =>
     {
@@ -156,6 +159,9 @@ class BackgroundController
   {
     if (!canvas) { console.warn('[background] canvas not found'); return { stop() {} }; }
     if (fps) this.setFPS(fps);
+    this.lastCanvas = canvas;
+    this.lastCfg = cfg;
+    this.lastUsePost = !!usePost;
     const THREE = this.THREE;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const handle = createThreeApp(THREE, {
@@ -195,6 +201,17 @@ class BackgroundController
   switchToSphereMode() { this.currentShape = (this.currentShape === 'ico') ? 'ring' : 'ico'; this.makeWirePoly(this.currentShape); }
   toggleSphereMode() { this.switchToSphereMode(); }
   setFPS({ poly, inner, grid } = {}) { if (typeof poly === 'number') this.fps.poly = poly; if (typeof inner === 'number') this.fps.inner = inner; if (typeof grid === 'number') this.fps.grid = grid; this.polyStep.reset(); this.gridStep.reset(); this.innerStep.reset(); }
+
+  reconfigure({ cfg = this.lastCfg, usePost = this.lastUsePost } = {})
+  {
+    if (!this.lastCanvas)
+    {
+      console.warn('[background] reconfigure called before start');
+      return;
+    }
+    try { this.stop(); } catch {}
+    this.start({ canvas: this.lastCanvas, cfg, usePost, fps: this.fps });
+  }
 }
 
 // 互換レイヤ（既存の関数API）
@@ -215,6 +232,7 @@ export function decreaseBalls() { getInstance().decreaseBalls(); }
 export function switchToSphereMode() { getInstance().switchToSphereMode(); }
 export const toggleSphereMode = switchToSphereMode;
 export function setBackgroundFPS({ poly, inner, grid } = {}) { getInstance().setFPS({ poly, inner, grid }); }
+export function restartBackground({ cfg, usePost } = {}) { getInstance().reconfigure({ cfg, usePost }); }
 
 export { BackgroundController };
 

@@ -2,6 +2,7 @@
 // アバターメッシュの生成と形状切替
 
 import { makeAffineMaterial, makePerspMaterial } from "../../effects/index.js";
+import { getTexture, configureTextureForMode } from "@core/assets.js";
 
 /**
  * 初期ボックス形状＋テクスチャ付きマテリアルでアバターメッシュを生成します。
@@ -12,40 +13,8 @@ export function createAvatarMesh(THREE, cfg, existingTexture)
   const baseSize = 2.25;
   const geo = new THREE.BoxGeometry(baseSize, baseSize, baseSize);
 
-  let tex = existingTexture;
-  if (!tex)
-  {
-    tex = new THREE.TextureLoader().load("img/me.jpg", t =>
-    {
-      t.colorSpace = THREE.SRGBColorSpace;
-      if (cfg.PS1_MODE)
-      {
-        t.generateMipmaps = false;
-        t.minFilter = THREE.NearestFilter;
-        t.magFilter = THREE.NearestFilter;
-        t.anisotropy = 0;
-      }
-    });
-  }
-  else
-  {
-    tex.colorSpace = THREE.SRGBColorSpace;
-    if (cfg.PS1_MODE)
-    {
-      tex.generateMipmaps = false;
-      tex.minFilter = THREE.NearestFilter;
-      tex.magFilter = THREE.NearestFilter;
-      tex.anisotropy = 0;
-    }
-    else
-    {
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.generateMipmaps = true;
-      tex.anisotropy = 0;
-    }
-    tex.needsUpdate = true;
-  }
+  let tex = existingTexture || getTexture(THREE, "img/me.jpg");
+  configureTextureForMode(THREE, tex, !!cfg.PS1_MODE);
 
   const mat = cfg.PS1_MODE
     ? makeAffineMaterial(THREE, tex, cfg.AFFINE_STRENGTH, false)

@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { GRAPHICS as CONFIG } from '@config/graphics.js';
 import { start as startBackground, setBackgroundFPS } from '@features/background/index.js';
+import { onRetroChanged, getRetroEnabled } from '@core/state.js';
 
 const canvas = document.getElementById('bg-canvas');
 if (!canvas) console.warn('[bg] #bg-canvas not found');
@@ -15,12 +16,12 @@ setBackgroundFPS({ poly: 20, grid: 24, inner: 15 });
 
 startBackground({ THREE, canvas, cfg, usePost: true });
 
-// Global kill switch: disable retro (PS1-style) effects
-window.addEventListener('disable-retro', () =>
+// Retro状態の変化で背景を再起動（ポストプロセス ON/OFF）
+onRetroChanged((enabled) =>
 {
   const canvas2 = document.getElementById('bg-canvas');
   if (!canvas2) return;
-  const cfgOff = { ...CONFIG, PS1_MODE: false, CA_ENABLED: false };
-  try { startBackground({ THREE, canvas: canvas2, cfg: cfgOff, usePost: false }); } catch {}
+  const nextCfg = { ...CONFIG, PS1_MODE: !!enabled, CA_ENABLED: enabled ? CONFIG.CA_ENABLED : false };
+  try { startBackground({ THREE, canvas: canvas2, cfg: nextCfg, usePost: !!enabled }); } catch {}
 });
 
