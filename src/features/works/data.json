@@ -1,10 +1,13 @@
 {
-  "ja": {
-    "game": [
+  "ja": 
+  {
+    "game": 
+    [
       {
         "src": "img/alien-chan.png",
         "alt": "AlienChan",
-        "desc": [
+        "desc": 
+        [
           "サンプル1",
           "内容はまだ決めていません"
         ]
@@ -12,27 +15,32 @@
       {
         "src": "img/me.jpg",
         "alt": "me",
-        "desc": [
+        "desc":
+        [
           "サンプル2",
           "内容はまだ決めていません"
         ]
       }
     ],
-    "tool": [
+    "tool": 
+    [
       {
         "src": "img/logo.png",
         "alt": "ロゴ",
-        "desc": [
+        "desc": 
+        [
           "サンプル1",
           "内容はまだ決めていません"
         ]
       }
     ],
-    "other": [
+    "other": 
+    [
       {
         "src": "img/me.jpg",
         "alt": "me",
-        "desc": [
+        "desc": 
+        [
           "顔写真",
           "スマホで撮って5分で作成",
           "5分の中には何かが潜む"

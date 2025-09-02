@@ -4,39 +4,15 @@
 
 ## 重複の削減
 
-- [x] CSS アニメ再トリガの共通化（小粒度）: `retriggerClass(el, className, durationMs)` を `src/utils/dom.js` に追加し、次を置き換える（他機能への横展開はしない）
-  - `src/entry/avatar.entry.js` の `triggerAboutLoadingBar()`
-  - `src/entry/works-gallery.entry.js` の `triggerWorksLoadingBar()`
-- [x] Carousel のクラス回転ロジック共通化（Works機能専用）: 位置クラス配列や付け替えを `src/features/works/carousel-util.js` に切り出し、`getOffset/rotateClasses` を置き換え（他機能へは流用しない）
-- [x] 固定ステップ実行の小ヘルパ: 3 つの FPS アキュムレータを「背景コントローラ内ローカル関数」で置換（`makeStepper(targetHz, fn)` などを `controller.js` 内部に実装し、外部には公開しない）
-
 ## 拡張性の向上
-
-- [x] Background コントローラのインスタンス化: モジュールスコープの状態（`scene/camera/renderer/inst/...`）をクラスに集約し、複数背景や将来のモード追加に備える（既存の関数APIは互換レイヤで維持）
-- [x] FPS/挙動の外部設定化: デフォルト値（`POLY_FPS/GRID_FPS/INNER_FPS/INST_MAX` など）を `src/features/background/config.js` に移動し、`start({...fps})` で上書き可能に（描画系の `@config/graphics.js` とは分離）
 
 ## 保守性の改善
 
-- [x] リサイズリスナーのクリーンアップ: `src/core/renderer.js` の `setupResize(...)` を cleanup 関数を返す形に変更し、`src/core/app.js` の `dispose()` で解除する
-- [x] Works ローダの空データ定数化: `src/features/works/loader.js` のフォールバック `{ ja: { game:[], tool:[], other:[] } }` を定数にして重複を排除、型（JSDoc）を明確化
-- [x] `background/controller.js` の関心分離: 生成（ジオメトリ/マテリアル）、更新（回転/グリッド/インナー）、破棄（dispose）を関数に分割
-- [x] マジックナンバーの定数化: CSS 遷移時間（例: 320ms, 1400ms）、ジオメトリ半径等を定数にまとめる
-
 ## 可読性の向上
-
-- [x] `doc/architecture.md` の文字化け修正: UTF-8 保存へ移行し、章構成を整理（エントリ→機能→コア→エフェクトの依存を図示）
-- [x] Entry スクリプトに JSDoc 追加: 主要なハンドラ（クリック、Carousel 更新）に一行コメントを補足
-- [x] README の補足: Import Maps の使い方、`*.entry.js` と `features/*` の責務分離を図解で追記
-
-## 追加で検討（任意）
-
-- [ ] ESLint ルール拡充: `no-unused-vars`/`no-implicit-globals` などを有効化し、モジュールスコープの漏れを検知
-- [ ] 性能計測フック: `createThreeApp` にフレーム時間の簡易ロガー（`performance.now()` 差分）をオプションで注入できるようにする
 
 ---
 
 実装メモ:
-- 破壊的変更（API 変更）を伴う項目は `feat:` コミットで段階的に進める（まず内部のみ適用→公開関数更新→呼び出し側置換）。
 - 既存の振る舞いを保持するため、デフォルト設定は現行値に合わせる。
 
 ## 設計ガイド
