@@ -40,10 +40,11 @@
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-    "@core/": "/src/core/",
-    "@features/": "/src/features/",
-    "@effects/": "/src/effects/",
-    "@config/": "/src/config/"
+    "three-subdivide":"https://cdn.jsdelivr.net/npm/three-subdivide@1.1.5/build/index.module.js",
+    "@core/": "./src/core/",
+    "@features/": "./src/features/",
+    "@effects/": "./src/effects/",
+    "@config/": "./src/config/"
   }
 }
 ```

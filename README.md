@@ -45,10 +45,10 @@ three.js を使ったフロントエンドのデモ兼ポートフォリオサ�
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
     "three-subdivide":"https://cdn.jsdelivr.net/npm/three-subdivide@1.1.5/build/index.module.js",
-    "@core/": "/src/core/",
-    "@features/": "/src/features/",
-    "@effects/": "/src/effects/",
-    "@config/": "/src/config/"
+    "@core/": "./src/core/",
+    "@features/": "./src/features/",
+    "@effects/": "./src/effects/",
+    "@config/": "./src/config/"
   }
 }
 ```
@@ -82,6 +82,7 @@ src/
       index.js             # バレル
     works/
       loader.js
+      carousel-util.js
       data.json
       index.js             # バレル
     boot/overlay.js
@@ -91,7 +92,8 @@ src/
     works-gallery.entry.js
     title-tricks.entry.js
     easter-egg.entry.js
-styles/global/              # サイト全体のスタイル
+src/styles/global/          # サイト全体のスタイル
+src/utils/dom.js            # DOMユーティリティ
 img/                        # 画像
 doc/architecture.md         # アーキテクチャ
 ```
@@ -129,10 +131,11 @@ core      -> 依存なし（外部 three を除く）
   "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-    "@core/": "/src/core/",
-    "@features/": "/src/features/",
-    "@effects/": "/src/effects/",
-    "@config/": "/src/config/"
+    "three-subdivide":"https://cdn.jsdelivr.net/npm/three-subdivide@1.1.5/build/index.module.js",
+    "@core/": "./src/core/",
+    "@features/": "./src/features/",
+    "@effects/": "./src/effects/",
+    "@config/": "./src/config/"
   }
 }
 ```
