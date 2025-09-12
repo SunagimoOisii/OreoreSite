@@ -175,3 +175,20 @@ body.hide-all main > *:not(h1)
   pointer-events: none;
 }
 
+/* ===============================
+   Scrollbar Visibility
+   Hide browser scrollbars but keep scrolling
+   =============================== */
+html,
+body
+{
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar
+{
+  width: 0;
+  height: 0;
+}
