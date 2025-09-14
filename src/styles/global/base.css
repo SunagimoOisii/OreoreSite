@@ -84,7 +84,7 @@ body.no-ps1 .boot-scanlines { display: none !important; }
 h1
 {
   color: var(--accent);
-  font-size: 400%;
+  font-size: 500%;
   margin-bottom: 0;
   user-select: none; /* モダンブラウザ */
   -webkit-user-select: none; /* Chrome / Safari */
@@ -104,7 +104,7 @@ h1
 
 section h2
 {
-  font-size: 200%;
+  font-size: 300%;
   margin-top: 48px;
   margin-bottom: 8px;
 }
