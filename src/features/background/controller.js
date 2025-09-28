@@ -5,6 +5,45 @@ import * as THREE_NS from 'three';
 import { createThreeApp } from '@core/app.js';
 import { BACKGROUND_DEFAULTS } from './config.js';
 
+const MIN_INNER_RADIUS = 0.4;
+const SHAPE_RADIUS_LIMITS = {
+  ico: 0.8,
+  default: 0.65
+};
+
+function getShapeRadiusLimit(shape)
+{
+  return SHAPE_RADIUS_LIMITS[shape] ?? SHAPE_RADIUS_LIMITS.default;
+}
+
+// Inner instanced cubes orbit with a soft wobble; isolate the math for readability.
+function computeInnerTransform({ seed, elapsedSeconds, shape, instanceIndex, innerYOffset })
+{
+  const angleAround = seed.a0 + elapsedSeconds * seed.sa;
+  const angleTilt = seed.b0 + elapsedSeconds * seed.sb;
+  const wobble = Math.sin(elapsedSeconds * 0.8 + instanceIndex) * seed.rr;
+  const baseRadius = seed.r0 + wobble;
+  const limitedRadius = Math.min(getShapeRadiusLimit(shape), Math.max(MIN_INNER_RADIUS, baseRadius));
+
+  const sinTilt = Math.sin(angleTilt);
+  const cosTilt = Math.cos(angleTilt);
+  const sinAround = Math.sin(angleAround);
+  const cosAround = Math.cos(angleAround);
+
+  return {
+    position: {
+      x: limitedRadius * sinTilt * cosAround,
+      y: limitedRadius * cosTilt * 0.6 + innerYOffset,
+      z: limitedRadius * sinTilt * sinAround
+    },
+    rotation: {
+      x: angleAround * 0.5,
+      y: angleTilt * 0.5,
+      z: (angleAround + angleTilt) * 0.25
+    }
+  };
+}
+
 class BackgroundController
 {
   constructor(THREE, defaults = BACKGROUND_DEFAULTS)
@@ -144,14 +183,33 @@ class BackgroundController
   updateInner(dt)
   {
     if (!this.inst) return;
-    let updated = false; this.innerStep.tick(dt, (step) => { this.elapsed += step; updated = true; }); if (!updated) return;
-    const limitR = (this.currentShape === 'ico') ? 0.8 : 0.65;
-    for (let i = 0; i < this.inst.count; i++)
+
+    let advanced = false;
+    this.innerStep.tick(dt, (step) =>
     {
-      const s = this.seeds[i]; const a = s.a0 + this.elapsed * s.sa; const b = s.b0 + this.elapsed * s.sb; const r = s.r0 + Math.sin(this.elapsed * 0.8 + i) * s.rr;
-      const cr = Math.min(limitR, Math.max(0.4, r)); const x = cr * Math.sin(b) * Math.cos(a); const y = cr * Math.cos(b) * 0.6 + this.defaults.INNER_Y_OFFSET; const z = cr * Math.sin(b) * Math.sin(a);
-      this.dummy.position.set(x, y, z); this.dummy.rotation.set(a * 0.5, b * 0.5, (a + b) * 0.25); this.dummy.updateMatrix(); this.inst.setMatrixAt(i, this.dummy.matrix);
+      this.elapsed += step;
+      advanced = true;
+    });
+    if (!advanced) return;
+
+    const innerYOffset = this.defaults.INNER_Y_OFFSET;
+    for (let instanceIndex = 0; instanceIndex < this.inst.count; instanceIndex++)
+    {
+      const seed = this.seeds[instanceIndex];
+      const { position, rotation } = computeInnerTransform({
+        seed,
+        elapsedSeconds: this.elapsed,
+        shape: this.currentShape,
+        instanceIndex,
+        innerYOffset
+      });
+
+      this.dummy.position.set(position.x, position.y, position.z);
+      this.dummy.rotation.set(rotation.x, rotation.y, rotation.z);
+      this.dummy.updateMatrix();
+      this.inst.setMatrixAt(instanceIndex, this.dummy.matrix);
     }
+
     this.inst.instanceMatrix.needsUpdate = true;
   }
 
