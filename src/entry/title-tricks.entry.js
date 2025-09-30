@@ -22,9 +22,16 @@ const charElems = [...text].map((ch, index) =>
 // 登録されたトリックを管理
 const tricks = new Map();
 export function registerTrick(index, handler) { tricks.set(index, handler); }
+export function unregisterTrick(index) { tricks.delete(index); }
+export function disposeTitleTricks()
+{
+  if (!titleElem) return;
+  titleElem.removeEventListener('click', onTitleClick);
+  tricks.clear();
+}
 
 // クリックされた文字に対応するトリックを実行
-titleElem.addEventListener('click', (e) =>
+const onTitleClick = (e) =>
 {
   const target = e.target;
   if (!(target instanceof HTMLElement)) return;
@@ -32,7 +39,9 @@ titleElem.addEventListener('click', (e) =>
   const index = Number(target.dataset.index);
   const trick = tricks.get(index);
   if (trick) trick();
-});
+};
+
+if (titleElem) titleElem.addEventListener('click', onTitleClick);
 
 // ユーティリティ
 function randomColor() { const hue = Math.floor(Math.random() * 360); return `hsl(${hue}, 80%, 60%)`; }
@@ -145,4 +154,3 @@ registerTrick(13, () =>
     original.forEach((el) => titleElem.appendChild(el));
   }, 5000);
 });
-
