@@ -4,6 +4,21 @@
 import { makeAffineMaterial, makePerspMaterial } from "../../effects/index.js";
 import { getTexture, configureTextureForMode } from "@core/assets.js";
 
+const DEFAULT_AVATAR_SHAPE = "cube";
+const SHAPE_FACTORIES = Object.freeze({
+  cube: (THREE, size) => new THREE.BoxGeometry(size, size, size),
+  tetra: (THREE, size) => new THREE.TetrahedronGeometry(size * Math.sqrt(3 / 8)),
+  sphere: (THREE, size) => new THREE.SphereGeometry(size / 2, 16, 12),
+  torus: (THREE, size) => new THREE.TorusGeometry(size * 0.35, size * 0.15, 16, 48),
+});
+
+function createGeometry(THREE, baseSize, type = DEFAULT_AVATAR_SHAPE)
+{
+  const key = typeof type === "string" ? type.toLowerCase() : DEFAULT_AVATAR_SHAPE;
+  const factory = SHAPE_FACTORIES[key] || SHAPE_FACTORIES[DEFAULT_AVATAR_SHAPE];
+  return factory(THREE, baseSize);
+}
+
 /**
  * 初期ボックス形状＋テクスチャ付きマテリアルでアバターメッシュを生成します。
  * @returns {{mesh: import('three').Mesh, baseSize:number, texture: import('three').Texture}}
@@ -11,7 +26,7 @@ import { getTexture, configureTextureForMode } from "@core/assets.js";
 export function createAvatarMesh(THREE, cfg, existingTexture)
 {
   const baseSize = 2.25;
-  const geo = new THREE.BoxGeometry(baseSize, baseSize, baseSize);
+  const geo = createGeometry(THREE, baseSize, DEFAULT_AVATAR_SHAPE);
 
   let tex = existingTexture || getTexture(THREE, "img/me.jpg");
   configureTextureForMode(THREE, tex, !!cfg.PS1_MODE);
@@ -29,27 +44,6 @@ export function createAvatarMesh(THREE, cfg, existingTexture)
  */
 export function changeAvatarShape(THREE, avatarMesh, baseSize, type)
 {
-  const { BoxGeometry, TetrahedronGeometry, SphereGeometry, TorusGeometry } = THREE;
   avatarMesh.geometry.dispose();
-
-  let geo;
-  switch (type)
-  {
-    case "cube":
-      geo = new BoxGeometry(baseSize, baseSize, baseSize);
-      break;
-    case "tetra":
-      geo = new TetrahedronGeometry(baseSize * Math.sqrt(3 / 8));
-      break;
-    case "sphere":
-      geo = new SphereGeometry(baseSize / 2, 16, 12);
-      break;
-    case "torus":
-      geo = new TorusGeometry(baseSize * 0.35, baseSize * 0.15, 16, 48);
-      break;
-    default:
-      geo = new BoxGeometry(baseSize, baseSize, baseSize);
-  }
-
-  avatarMesh.geometry = geo;
+  avatarMesh.geometry = createGeometry(THREE, baseSize, type);
 }

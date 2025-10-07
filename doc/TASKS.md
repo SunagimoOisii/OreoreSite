@@ -4,21 +4,21 @@
 
 ## 重複の削減
 
-- `src/entry/title-tricks.entry.js` の UFO や house の生成処理をユーティリティ化し、繰り返している DOM 生成とタイマー解放の手順を 1 箇所にまとめる。
-- `src/features/avatar/mesh.js` での Box/Tetra/Sphere/Torus の作成ロジックを形状ごとのテーブルに整理し、`createAvatarMesh` と `changeAvatarShape` から共有してジオメトリ生成を単一実装へ寄せる。
+- []`src/entry/title-tricks.entry.js` の UFO や house の生成処理をユーティリティ化し、繰り返している DOM 生成とタイマー解放の手順を 1 箇所にまとめる。
+- [finished]`src/features/avatar/mesh.js` での Box/Tetra/Sphere/Torus の作成ロジックを形状ごとのテーブルに整理し、`createAvatarMesh` と `changeAvatarShape` から共有してジオメトリ生成を単一実装へ寄せる。
 
 ## 拡張性の向上
 
-- `src/entry/title-tricks.entry.js` の `registerTrick` 群をキャラクター定義配列＋初期化ルーチンに再構成し、新しいトリック追加時も 1 箇所の追記で完結するようにする。
-- `src/features/background/controller.js` のワイヤーフレーム形状分岐を設定テーブル＋ビルダー関数に置き換え、追加形状を設定ファイルから注入できるようにする。
+- []`src/entry/title-tricks.entry.js` の `registerTrick` 群をキャラクター定義配列＋初期化ルーチンに再構成し、新しいトリック追加時も 1 箇所の追記で完結するようにする。
+- []`src/features/background/controller.js` のワイヤーフレーム形状分岐を設定テーブル＋ビルダー関数に置き換え、追加形状を設定ファイルから注入できるようにする。
 
 ## 保守性の改善
 
-- `src/entry/title-tricks.entry.js` に破棄 API を用意し、クリックリスナーとトリック登録を明示的に解除できるようにして再初期化時のリークを防ぐ。
+- [finished]`src/entry/title-tricks.entry.js` に破棄 API を用意し、クリックリスナーとトリック登録を明示的に解除できるようにして再初期化時のリークを防ぐ。
 
 ## 可読性の向上
 
-- `src/features/background/controller.js` の `updateInner` から座標計算を純粋関数へ切り出し、変数名とコメントで役割を明示して読み解きコストを下げる。
+- [finished]`src/features/background/controller.js` の `updateInner` から座標計算を純粋関数へ切り出し、変数名とコメントで役割を明示して読み解きコストを下げる。
 
 ---
 
