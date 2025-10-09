@@ -46,25 +46,97 @@ if (titleElem) titleElem.addEventListener('click', onTitleClick);
 // ユーティリティ
 function randomColor() { const hue = Math.floor(Math.random() * 360); return `hsl(${hue}, 80%, 60%)`; }
 
+function spawnEphemeralElements({
+  count,
+  className,
+  pickContent,
+  applyStyles,
+  interval = 0,
+  removal = {},
+})
+{
+  const timerIds = new Set();
+
+  const schedule = (callback, delay) =>
+  {
+    if (delay <= 0)
+    {
+      callback();
+      return;
+    }
+    const id = setTimeout(() =>
+    {
+      timerIds.delete(id);
+      callback();
+    }, delay);
+    timerIds.add(id);
+  };
+
+  const scheduleRemoval = (element, delay) =>
+  {
+    const id = setTimeout(() =>
+    {
+      timerIds.delete(id);
+      element.remove();
+    }, delay);
+    timerIds.add(id);
+  };
+
+  for (let i = 0; i < count; i += 1)
+  {
+    schedule(() =>
+    {
+      const el = document.createElement('span');
+      el.className = className;
+      const content = typeof pickContent === 'function' ? pickContent(i) : pickContent;
+      el.textContent = content;
+      applyStyles?.(el, i);
+      document.body.appendChild(el);
+
+      if (removal.event)
+      {
+        const handler = () =>
+        {
+          el.removeEventListener(removal.event, handler);
+          el.remove();
+        };
+        el.addEventListener(removal.event, handler);
+      }
+
+      if (removal.timeout)
+      {
+        const lifespan = typeof removal.timeout === 'function' ? removal.timeout(i) : removal.timeout;
+        scheduleRemoval(el, lifespan);
+      }
+    }, interval * i);
+  }
+
+  return () =>
+  {
+    timerIds.forEach(clearTimeout);
+    timerIds.clear();
+  };
+}
+
 // 0: S 全文字カラーランダム
 registerTrick(0, () => { charElems.forEach((el) => { el.style.color = randomColor(); }); });
 
 // 1: U UFO 大量発生
 registerTrick(1, () =>
 {
-  const count = 20;
-  for (let i = 0; i < count; i++)
-  {
-    const ufo = document.createElement('span');
-    ufo.className = 'ufo';
-    ufo.textContent = '\u{1F6F8}';
-    ufo.style.top = `${Math.random() * 100}vh`;
-    ufo.style.animationDelay = `${Math.random()}s`;
-    const duration = 2 + Math.random() * 2;
-    ufo.style.animationDuration = `${duration}s`;
-    document.body.appendChild(ufo);
-    ufo.addEventListener('animationend', () => ufo.remove());
-  }
+  spawnEphemeralElements({
+    count: 20,
+    className: 'ufo',
+    pickContent: '\u{1F6F8}',
+    applyStyles: (element) =>
+    {
+      element.style.top = `${Math.random() * 100}vh`;
+      element.style.animationDelay = `${Math.random()}s`;
+      const duration = 2 + Math.random() * 2;
+      element.style.animationDuration = `${duration}s`;
+    },
+    removal: { event: 'animationend' },
+  });
 });
 
 // 2: N タブタイトル変更
@@ -109,28 +181,19 @@ registerTrick(7, () =>
 registerTrick(9, () => 
 {
   const emojis = ['\u{1F3E0}', '\u{1F3D8}', '\u{1F3E1}'];
-  const count = 100;
-  const interval = 25; // 1つ出すごとの間隔（ms）
-
-  for (let i = 0; i < count; i++) 
-  {
-    setTimeout(() => 
+  spawnEphemeralElements({
+    count: 100,
+    className: 'house',
+    pickContent: () => emojis[Math.floor(Math.random() * emojis.length)],
+    applyStyles: (element) =>
     {
-      const house = document.createElement('span');
-      house.className = 'house';
-      house.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      house.style.left = `${Math.random() * 100}vw`;
-      house.style.top = `${Math.random() * 100}vh`;
-      house.style.fontSize = `${1 + Math.random() * 2}rem`;
-      document.body.appendChild(house);
-
-      // 3秒後に削除
-      setTimeout(() => 
-      {
-        house.remove();
-      }, 3000);
-    }, i * interval);
-  }
+      element.style.left = `${Math.random() * 100}vw`;
+      element.style.top = `${Math.random() * 100}vh`;
+      element.style.fontSize = `${1 + Math.random() * 2}rem`;
+    },
+    interval: 25, // 1つ出すごとの間隔（ms）
+    removal: { timeout: 3000 },
+  });
 });
 
 // 10: O 背景モード切替
@@ -154,3 +217,4 @@ registerTrick(13, () =>
     original.forEach((el) => titleElem.appendChild(el));
   }, 5000);
 });
+

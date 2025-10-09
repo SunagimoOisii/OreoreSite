@@ -4,7 +4,7 @@
 
 ## 重複の削減
 
-- []`src/entry/title-tricks.entry.js` の UFO や house の生成処理をユーティリティ化し、繰り返している DOM 生成とタイマー解放の手順を 1 箇所にまとめる。
+- [finished]`src/entry/title-tricks.entry.js` の UFO や house の生成処理をユーティリティ化し、繰り返している DOM 生成とタイマー解放の手順を 1 箇所にまとめる。
 - [finished]`src/features/avatar/mesh.js` での Box/Tetra/Sphere/Torus の作成ロジックを形状ごとのテーブルに整理し、`createAvatarMesh` と `changeAvatarShape` から共有してジオメトリ生成を単一実装へ寄せる。
 
 ## 拡張性の向上
