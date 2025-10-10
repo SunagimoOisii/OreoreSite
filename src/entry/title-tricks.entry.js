@@ -118,103 +118,157 @@ function spawnEphemeralElements({
   };
 }
 
-// 0: S 全文字カラーランダム
-registerTrick(0, () => { charElems.forEach((el) => { el.style.color = randomColor(); }); });
-
-// 1: U UFO 大量発生
-registerTrick(1, () =>
-{
-  spawnEphemeralElements({
-    count: 20,
-    className: 'ufo',
-    pickContent: '\u{1F6F8}',
-    applyStyles: (element) =>
-    {
-      element.style.top = `${Math.random() * 100}vh`;
-      element.style.animationDelay = `${Math.random()}s`;
-      const duration = 2 + Math.random() * 2;
-      element.style.animationDuration = `${duration}s`;
-    },
-    removal: { event: 'animationend' },
-  });
-});
-
-// 2: N タブタイトル変更
-registerTrick(2, () => { document.title = '君ってデバッガー？'; });
-
-// 3: A 画面暗転 +「ビデオ」表示
-registerTrick(3, () =>
-{
-  const overlay = document.createElement('div');
-  overlay.id = 'video-overlay';
-  overlay.textContent = 'ビデオ';
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 5000);
-});
-
-// 4: G 全文字回転（5秒）
-registerTrick(4, () =>
-{
-  charElems.forEach((el) =>
+const trickDefinitions = [
   {
-    el.classList.remove('rotate');
-    void el.offsetWidth; // reflow
-    el.classList.add('rotate');
-    setTimeout(() => el.classList.remove('rotate'), 5000);
-  });
-});
-
-// 5: I 背景の玉を増やす
-registerTrick(5, () => { increaseBalls(); });
-
-// 6: M 背景の玉を減らす
-registerTrick(6, () => { decreaseBalls(); });
-
-// 7: O h1 以外を 5 秒隠す
-registerTrick(7, () =>
-{
-  document.body.classList.add('hide-all');
-  setTimeout(() => document.body.classList.remove('hide-all'), 5000);
-});
-
-// 9: 家の絵文字を順番に表示
-registerTrick(9, () => 
-{
-  const emojis = ['\u{1F3E0}', '\u{1F3D8}', '\u{1F3E1}'];
-  spawnEphemeralElements({
-    count: 100,
-    className: 'house',
-    pickContent: () => emojis[Math.floor(Math.random() * emojis.length)],
-    applyStyles: (element) =>
+    index: 0,
+    label: 'S',
+    summary: '全文字カラーランダム',
+    handler: () =>
     {
-      element.style.left = `${Math.random() * 100}vw`;
-      element.style.top = `${Math.random() * 100}vh`;
-      element.style.fontSize = `${1 + Math.random() * 2}rem`;
+      charElems.forEach((el) =>
+      {
+        el.style.color = randomColor();
+      });
     },
-    interval: 25, // 1つ出すごとの間隔（ms）
-    removal: { timeout: 3000 },
-  });
-});
-
-// 10: O 背景モード切替
-registerTrick(10, () => { switchToSphereMode(); });
-
-// 11: U レトロ風（PS1風）エフェクトを全無効化
-registerTrick(11, () =>
-{
-  setRetroEnabled(false);
-  document.body.classList.add('no-ps1');
-});
-
-// 13: E h1 の文字列を一時的に差し替え
-registerTrick(13, () =>
-{
-  const original = [...charElems];
-  titleElem.textContent = 'ネタがもうない';
-  setTimeout(() =>
+  },
   {
-    titleElem.textContent = '';
-    original.forEach((el) => titleElem.appendChild(el));
-  }, 5000);
-});
+    index: 1,
+    label: 'U',
+    summary: 'UFO 大量発生',
+    handler: () =>
+    {
+      spawnEphemeralElements({
+        count: 20,
+        className: 'ufo',
+        pickContent: '\u{1F6F8}',
+        applyStyles: (element) =>
+        {
+          element.style.top = `${Math.random() * 100}vh`;
+          element.style.animationDelay = `${Math.random()}s`;
+          const duration = 2 + Math.random() * 2;
+          element.style.animationDuration = `${duration}s`;
+        },
+        removal: { event: 'animationend' },
+      });
+    },
+  },
+  {
+    index: 2,
+    label: 'N',
+    summary: 'タブタイトル変更',
+    handler: () => { document.title = '君ってデバッガー？'; },
+  },
+  {
+    index: 3,
+    label: 'A',
+    summary: '画面暗転 +「ビデオ」表示',
+    handler: () =>
+    {
+      const overlay = document.createElement('div');
+      overlay.id = 'video-overlay';
+      overlay.textContent = 'ビデオ';
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 5000);
+    },
+  },
+  {
+    index: 4,
+    label: 'G',
+    summary: '全文字回転（5秒）',
+    handler: () =>
+    {
+      charElems.forEach((el) =>
+      {
+        el.classList.remove('rotate');
+        void el.offsetWidth; // reflow
+        el.classList.add('rotate');
+        setTimeout(() => el.classList.remove('rotate'), 5000);
+      });
+    },
+  },
+  {
+    index: 5,
+    label: 'I',
+    summary: '背景の玉を増やす',
+    handler: () => { increaseBalls(); },
+  },
+  {
+    index: 6,
+    label: 'M',
+    summary: '背景の玉を減らす',
+    handler: () => { decreaseBalls(); },
+  },
+  {
+    index: 7,
+    label: 'O',
+    summary: 'h1 以外を 5 秒隠す',
+    handler: () =>
+    {
+      document.body.classList.add('hide-all');
+      setTimeout(() => document.body.classList.remove('hide-all'), 5000);
+    },
+  },
+  {
+    index: 9,
+    label: 'O',
+    summary: '家の絵文字を順番に表示',
+    handler: () =>
+    {
+      const emojis = ['\u{1F3E0}', '\u{1F3D8}', '\u{1F3E1}'];
+      spawnEphemeralElements({
+        count: 100,
+        className: 'house',
+        pickContent: () => emojis[Math.floor(Math.random() * emojis.length)],
+        applyStyles: (element) =>
+        {
+          element.style.left = `${Math.random() * 100}vw`;
+          element.style.top = `${Math.random() * 100}vh`;
+          element.style.fontSize = `${1 + Math.random() * 2}rem`;
+        },
+        interval: 25, // 1つ出すごとの間隔（ms）
+        removal: { timeout: 3000 },
+      });
+    },
+  },
+  {
+    index: 10,
+    label: 'O',
+    summary: '背景モード切替',
+    handler: () => { switchToSphereMode(); },
+  },
+  {
+    index: 11,
+    label: 'U',
+    summary: 'レトロ風（PS1風）エフェクトを全無効化',
+    handler: () =>
+    {
+      setRetroEnabled(false);
+      document.body.classList.add('no-ps1');
+    },
+  },
+  {
+    index: 13,
+    label: 'E',
+    summary: 'h1 の文字列を一時的に差し替え',
+    handler: () =>
+    {
+      const original = [...charElems];
+      titleElem.textContent = 'ネタがもうない';
+      setTimeout(() =>
+      {
+        titleElem.textContent = '';
+        original.forEach((el) => titleElem.appendChild(el));
+      }, 5000);
+    },
+  },
+];
 
+function initializeCharacterTricks(definitions)
+{
+  definitions.forEach(({ index, handler }) =>
+  {
+    registerTrick(index, handler);
+  });
+}
+
+initializeCharacterTricks(trickDefinitions);
