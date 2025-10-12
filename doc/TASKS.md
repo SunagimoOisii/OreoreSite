@@ -9,7 +9,7 @@
 
 ## 拡張性の向上
 
-- []`src/entry/title-tricks.entry.js` の `registerTrick` 群をキャラクター定義配列＋初期化ルーチンに再構成し、新しいトリック追加時も 1 箇所の追記で完結するようにする。
+- [finished]`src/entry/title-tricks.entry.js` の `registerTrick` 群をキャラクター定義配列＋初期化ルーチンに再構成し、新しいトリック追加時も 1 箇所の追記で完結するようにする。
 - []`src/features/background/controller.js` のワイヤーフレーム形状分岐を設定テーブル＋ビルダー関数に置き換え、追加形状を設定ファイルから注入できるようにする。
 
 ## 保守性の改善
