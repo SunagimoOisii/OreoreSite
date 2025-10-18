@@ -68,7 +68,7 @@ src/
   effects/                  # マテリアル/ポストプロセス等
     materials.js
     postprocess.js
-    psx-jitter.js
+    retro-jitter.js
     index.js               # バレル
   features/                 # 機能（DOM・データも含む）
     avatar/

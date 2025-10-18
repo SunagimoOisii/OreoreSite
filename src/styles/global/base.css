@@ -32,13 +32,13 @@ body
 /* ===============================
    Cross-Effect CSS Policy (retro OFF)
    =============================== */
-body.no-ps1 { image-rendering: auto; }
-body.no-ps1 #bg-canvas,
-body.no-ps1 #avatar-canvas { image-rendering: auto !important; }
+body.no-retro { image-rendering: auto; }
+body.no-retro #bg-canvas,
+body.no-retro #avatar-canvas { image-rendering: auto !important; }
 /* アバターCRTオーバーレイ/走査線など視覚効果を抑止 */
-body.no-ps1 .avatar-crt::after { display: none !important; }
+body.no-retro .avatar-crt::after { display: none !important; }
 /* 万一、起動オーバーレイが残っていても効果系を無効 */
-body.no-ps1 .boot-scanlines { display: none !important; }
+body.no-retro .boot-scanlines { display: none !important; }
 
 #mobile-warning
 {

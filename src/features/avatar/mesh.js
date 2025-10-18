@@ -29,9 +29,9 @@ export function createAvatarMesh(THREE, cfg, existingTexture)
   const geo = createGeometry(THREE, baseSize, DEFAULT_AVATAR_SHAPE);
 
   let tex = existingTexture || getTexture(THREE, "img/me.jpg");
-  configureTextureForMode(THREE, tex, !!cfg.PS1_MODE);
+  configureTextureForMode(THREE, tex, !!cfg.RETRO_MODE);
 
-  const mat = cfg.PS1_MODE
+  const mat = cfg.RETRO_MODE
     ? makeAffineMaterial(THREE, tex, cfg.AFFINE_STRENGTH, false)
     : makePerspMaterial(THREE, tex, false);
 

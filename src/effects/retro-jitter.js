@@ -1,8 +1,8 @@
-// src/effects/psx-jitter.js
-// PS1/PSX 風のジッター（粗い量子化風の揺れ）
+// src/effects/retro-jitter.js
+// レトロ調のジッター（粗い量子化風の揺れ）
 
 /**
- * 任意の値を指定ステップで量子化します。
+ * 値を指定ステップで量子化します。
  * @param {number} v 対象値
  * @param {number} step 量子化ステップ
  * @returns {number} 量子化後の値
@@ -13,15 +13,15 @@ function snap(v, step)
 }
 
 /**
- * カメラとオブジェクトにジッターを適用してPS1風の表現に寄せます。
+ * カメラとオブジェクトにジッターを適用してレトロ調の表現に寄せます。
  * @param {typeof import('three')} THREE three オブジェクト
  * @param {THREE.Camera} camera カメラ
  * @param {THREE.Object3D} obj 対象オブジェクト
- * @param {object} cfg 設定（PS1_MODE が前提）
+ * @param {object} cfg 設定（RETRO_MODE が前提）
  */
-export function applyPS1Jitter(THREE, camera, obj, cfg)
+export function applyRetroJitter(THREE, camera, obj, cfg)
 {
-  if (!cfg.PS1_MODE)
+  if (!cfg.RETRO_MODE)
     return;
   const posStep = 1 / 256;
   const rotStep = THREE.MathUtils.degToRad(1.0);

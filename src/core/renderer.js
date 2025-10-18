@@ -28,7 +28,7 @@ export function fitToCanvas(renderer, canvas, cfg)
   const rect = canvas.getBoundingClientRect();
   const w = Math.max(1, rect.width | 0);
   const h = Math.max(1, rect.height | 0);
-  if (cfg.PS1_MODE)
+  if (cfg.RETRO_MODE)
   {
     renderer.setPixelRatio(1);
     const sw = Math.max(1, Math.floor(w * cfg.INTERNAL_SCALE));

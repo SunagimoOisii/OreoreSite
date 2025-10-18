@@ -14,7 +14,7 @@
   padding: 16px;
   padding-bottom: 32px; /* ステータスバー分の余白 */
   border-radius: 0; /* 角丸解除 */
-  /* PS1風: 厚ベベル + 硬い段階シャドウ */
+  /* レトロ調: 厚ベベル + 硬い段階シャドウ */
   box-shadow:
     inset 0 2px 0 var(--chrome-bevel-light),
     inset 2px 0 0 var(--chrome-bevel-light),
@@ -187,5 +187,5 @@
 }
 
 /* Retro kill switch: disable CRT overlay and pixelated look */
-body.no-ps1 .avatar-crt::after { display: none; }
-body.no-ps1 #avatar-canvas { image-rendering: auto !important; }
+body.no-retro .avatar-crt::after { display: none; }
+body.no-retro #avatar-canvas { image-rendering: auto !important; }

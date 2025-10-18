@@ -54,7 +54,7 @@ function bindUIOnce()
   });
 }
 
-function launchAvatar(ps1Enabled)
+function launchAvatar(retroEnabled)
 {
   // 既存ループを破棄
   try { appHandle?.dispose?.(); } catch {}
@@ -63,14 +63,14 @@ function launchAvatar(ps1Enabled)
   // 参照をクリア
   explosion = undefined; updater = undefined; avatarMesh = undefined; baseSize = undefined;
 
-  const cfg = { ...CONFIG, PS1_MODE: !!ps1Enabled, CA_ENABLED: ps1Enabled ? CONFIG.CA_ENABLED : false };
+  const cfg = { ...CONFIG, RETRO_MODE: !!retroEnabled, CA_ENABLED: retroEnabled ? CONFIG.CA_ENABLED : false };
 
   appHandle = createThreeApp(THREE, {
     canvas,
     cfg,
-    fixedStep: cfg.PS1_MODE ? (1000 / CONFIG.FIXED_FPS) : 0,
+    fixedStep: cfg.RETRO_MODE ? (1000 / CONFIG.FIXED_FPS) : 0,
     useControls: true,
-    usePost: cfg.PS1_MODE,
+    usePost: cfg.RETRO_MODE,
     init: ({ scene, camera }) =>
     {
       // ブートオーバーレイは初回のみ
@@ -99,12 +99,12 @@ function launchAvatar(ps1Enabled)
 }
 
 // 初期起動（CONFIG をそのまま尊重）
-launchAvatar(!!CONFIG.PS1_MODE);
+launchAvatar(!!CONFIG.RETRO_MODE);
 
 // レトロ効果の全無効化イベントで再初期化（ポストプロセス含む完全OFF）
 // Retro状態の変化でアバターを再初期化
 onRetroChanged((enabled) =>
 {
-  if (!enabled) document.body.classList.add('no-ps1');
+  if (!enabled) document.body.classList.add('no-retro');
   launchAvatar(!!enabled);
 });

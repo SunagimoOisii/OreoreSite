@@ -3,7 +3,7 @@
 
 /**
  * ポストプロセス パイプラインを生成します。
- * PS1_MODE なら量子化ディザと色収差を適用し、そうでなければ素の描画。
+ * RETRO_MODE なら量子化ディザと色収差を適用し、そうでなければ素の描画。
  * @param {typeof import('three')} THREE three オブジェクト
  * @param {THREE.WebGLRenderer} renderer ベースレンダラー
  * @param {object} cfg 設定
@@ -11,9 +11,9 @@
  */
 export function createPostPipeline(THREE, renderer, cfg)
 {
-  if (!cfg.PS1_MODE)
+  if (!cfg.RETRO_MODE)
   {
-    // PS1モードでなければポスト処理なしでそのまま描画
+    // レトロモードでなければポスト処理なしでそのまま描画
     return {
       render: (scene, camera) => renderer.render(scene, camera),
       resize: () => { }

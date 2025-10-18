@@ -16,7 +16,7 @@ import { createPostPipeline } from "@effects/index.js";
  * @param {typeof import('three')} THREE
  * @param {Object} options
  * @param {HTMLCanvasElement} options.canvas - ターゲットのキャンバス
- * @param {object} options.cfg - 設定（PS1_MODE など）
+ * @param {object} options.cfg - 設定（RETRO_MODE など）
  * @param {number} [options.fixedStep=0] - 固定ステップ(ms)。0 で可変
  * @param {boolean} [options.useControls=false] - OrbitControls を使うか
  * @param {boolean} [options.usePost=false] - ポストプロセスを使うか

@@ -29,7 +29,7 @@
 ## core/effects の責務
 
 - core: three.js の初期化・固定ステップループ・リサイズ・操作（OrbitControls）
-- effects: ポストプロセスやマテリアル、PS1風ジッターなどの視覚効果
+- effects: ポストプロセスやマテリアル、レトロ調ジッターなどの視覚効果
 
 ## Import Maps（例）
 
@@ -64,7 +64,7 @@ src/
   effects/
     postprocess.js
     materials.js
-    psx-jitter.js
+    retro-jitter.js
     index.js
   features/
     background/

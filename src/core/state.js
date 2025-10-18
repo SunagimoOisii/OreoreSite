@@ -3,7 +3,7 @@
 
 const bus = new EventTarget();
 
-let retroEnabled = true; // PS1風エフェクトの有効/無効
+let retroEnabled = true; // レトロ調エフェクトの有効/無効
 
 export function getRetroEnabled() { return retroEnabled; }
 

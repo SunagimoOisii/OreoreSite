@@ -1,14 +1,14 @@
 // src/features/avatar/update.js
-// アバターの更新処理: 回転・PSX風ジッター・爆発の移動制御
+// �A�o�^�[�̍X�V����: ��]�E���q3D���W�b�^�[�E�����̈ړ�����
 
-import { applyPS1Jitter } from "../../effects/index.js";
+import { applyRetroJitter } from "../../effects/index.js";
 
 /**
- * アバターの更新処理を提供します。
+ * �A�o�^�[�̍X�V������񋟂��܂��B
  */
 export function createAvatarUpdater(THREE, camera, avatarMesh, cfg, explosion)
 {
-  const ROT_SPEED = 0.007 * 60; // dt秒にスケールされた回転速度
+  const ROT_SPEED = 0.007 * 60; // dt�b�ɃX�P�[�����ꂽ��]���x
   let isRotating = true;
 
   function setRotating(v) { isRotating = !!v; }
@@ -24,10 +24,11 @@ export function createAvatarUpdater(THREE, camera, avatarMesh, cfg, explosion)
       if (isRotating)
         avatarMesh.rotation.y += ROT_SPEED * dt;
 
-      if (cfg.PS1_MODE)
-        applyPS1Jitter(THREE, camera, avatarMesh, cfg);
+      if (cfg.RETRO_MODE)
+        applyRetroJitter(THREE, camera, avatarMesh, cfg);
     }
   }
 
   return { update, setRotating };
 }
+

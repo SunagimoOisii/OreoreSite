@@ -239,11 +239,11 @@ const trickDefinitions = [
   {
     index: 11,
     label: 'U',
-    summary: 'レトロ風（PS1風）エフェクトを全無効化',
+    summary: 'レトロ調エフェクトを全無効化',
     handler: () =>
     {
       setRetroEnabled(false);
-      document.body.classList.add('no-ps1');
+      document.body.classList.add('no-retro');
     },
   },
   {

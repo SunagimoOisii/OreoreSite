@@ -1,7 +1,7 @@
 // src/effects/materials.js
 // three.js 用マテリアル生成ユーティリティ
 // - createShaderMaterial: 共通オプションをまとめたラッパー
-// - makeAffineMaterial: 透視補正を外した“擬似アフィン”なUV補間（PS1風の床がにゅるっと伸びる歪み）
+// - makeAffineMaterial: 透視補正を外した“擬似アフィン”なUV補間（レトロ調の床がにゅるっと伸びる歪み）
 // - makePerspMaterial: 通常の透視補正（標準的な描画）
 //
 // 使い方：scene.js 側などで

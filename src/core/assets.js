@@ -17,11 +17,11 @@ export function getTexture(THREE, url)
   return tex;
 }
 
-export function configureTextureForMode(THREE, texture, ps1Mode)
+export function configureTextureForMode(THREE, texture, retroMode)
 {
   if (!texture) return;
   texture.colorSpace = THREE.SRGBColorSpace;
-  if (ps1Mode)
+  if (retroMode)
   {
     texture.generateMipmaps = false;
     texture.minFilter = THREE.NearestFilter;
@@ -37,4 +37,3 @@ export function configureTextureForMode(THREE, texture, ps1Mode)
   }
   texture.needsUpdate = true;
 }
-

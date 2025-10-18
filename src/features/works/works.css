@@ -121,7 +121,7 @@
 }
 
 /* ===============================
-   PS1 UI Chrome (Bevel + Shadow + Corner Markers)
+   Retro UI Chrome (Bevel + Shadow + Corner Markers)
    =============================== */
 /* Works content panel: bevel + hard drop shadow */
 .works-content
@@ -245,7 +245,7 @@
   animation: bar-load 1.2s steps(12) 1;
 }
 
-/* PS1 UI Chrome: Works Arrows (Left/Right) */
+/* Retro UI Chrome: Works Arrows (Left/Right) */
 .arrow,
 .arrow-left,
 .arrow-right { border: none; }
