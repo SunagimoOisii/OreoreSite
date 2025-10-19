@@ -9,7 +9,7 @@ import { initBootOverlay } from "@features/boot/overlay.js";
 import { onRetroChanged, getRetroEnabled } from "@core/state.js";
 import { retriggerClass } from "../utils/dom.js";
 
-// three.js でアバターを描画し、UI と簡単なインタラクションを結び付けるエントリ。
+// three.js でアバターを描画し、UI と簡単なインタラクションを結び付けるエントリ
 const canvas = document.getElementById("avatar-canvas");
 
 // 定数（マジックナンバーを避ける）
